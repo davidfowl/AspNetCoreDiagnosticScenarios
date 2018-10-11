@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Scenarios.Services;
 
 namespace Scenarios
 {
@@ -12,6 +13,8 @@ namespace Scenarios
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
+
+            services.AddHttpClient<PokemonService>();
 
             services.AddHttpClient("timeout", client =>
             {

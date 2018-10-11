@@ -24,7 +24,7 @@ namespace Scenarios
 
             services.AddHttpContextAccessor();
 
-            services.AddDbContext<DbContext>(o =>
+            services.AddDbContext<PokemonDbContext>(o =>
             {
                 o.UseInMemoryDatabase("MyApplication");
             });
@@ -33,7 +33,7 @@ namespace Scenarios
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, PokemonDbContext context)
         {
             if (env.IsDevelopment())
             {
@@ -43,6 +43,8 @@ namespace Scenarios
             app.UseFileServer();
 
             app.UseMvc();
+
+            context.Database.EnsureCreated();
         }
     }
 }

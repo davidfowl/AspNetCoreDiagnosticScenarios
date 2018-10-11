@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Scenarios.Model;
@@ -15,14 +14,14 @@ namespace Scenarios.Controllers
     public class FireAndForgetController : Controller
     {
         [HttpGet("/fire-and-forget-1")]
-        public IActionResult FireAndForget1([FromServices]DbContext context)
+        public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
         {
             // This is async void!
             ThreadPool.QueueUserWorkItem(async state =>
             {
                 await Task.Delay(1000);
 
-                context.Set<Pokemon>().Add(new Pokemon());
+                context.Pokemon.Add(new Pokemon());
                 await context.SaveChangesAsync();
             });
 
@@ -31,13 +30,13 @@ namespace Scenarios.Controllers
 
 
         [HttpGet("/fire-and-forget-2")]
-        public IActionResult FireAndForget2([FromServices]DbContext context)
+        public IActionResult FireAndForget2([FromServices]PokemonDbContext context)
         {
             _ = Task.Run(async () =>
             {
                 await Task.Delay(1000);
 
-                context.Set<Pokemon>().Add(new Pokemon());
+                context.Pokemon.Add(new Pokemon());
                 await context.SaveChangesAsync();
             });
 
@@ -63,9 +62,9 @@ namespace Scenarios.Controllers
                         try
                         {
 
-                            var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+                            var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
 
-                            context.Set<Pokemon>().Add(new Pokemon());
+                            context.Pokemon.Add(new Pokemon());
                             await context.SaveChangesAsync();
                         }
                         catch (Exception ex)
@@ -99,9 +98,9 @@ namespace Scenarios.Controllers
                         try
                         {
 
-                            var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+                            var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
 
-                            context.Set<Pokemon>().Add(new Pokemon());
+                            context.Pokemon.Add(new Pokemon());
                             await context.SaveChangesAsync();
                         }
                         catch (Exception ex)
@@ -137,9 +136,9 @@ namespace Scenarios.Controllers
                         try
                         {
 
-                            var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+                            var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
 
-                            context.Set<Pokemon>().Add(new Pokemon());
+                            context.Add(new Pokemon());
                             await context.SaveChangesAsync();
                         }
                         catch (Exception ex)

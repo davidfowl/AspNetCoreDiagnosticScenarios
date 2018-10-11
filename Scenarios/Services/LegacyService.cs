@@ -62,5 +62,117 @@ namespace Scenarios.Services
         {
             return Task.FromResult(Guid.NewGuid().ToString());
         }
+
+        public Task<string> DoAsyncOperationOverLegacyBad(CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<string>();
+
+            var operation = new LegacyAsyncOperation();
+
+            var registration = default(CancellationTokenRegistration);
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                registration = cancellationToken.Register(state =>
+                {
+                    ((LegacyAsyncOperation)state).Cancel();
+                },
+                operation);
+            }
+
+            operation.Completed += OnCompleted;
+
+            operation.Start();
+
+            return tcs.Task;
+
+            void OnCompleted(string result, bool cancelled)
+            {
+                registration.Dispose();
+
+                operation.Completed -= OnCompleted;
+
+                if (cancelled)
+                {
+                    tcs.TrySetCanceled(cancellationToken);
+                }
+                else
+                {
+                    tcs.TrySetResult(result);
+                }
+            }
+        }
+
+        public Task<string> DoAsyncOperationOverLegacy(CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var operation = new LegacyAsyncOperation();
+
+            var registration = default(CancellationTokenRegistration);
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                registration = cancellationToken.Register(state =>
+                {
+                    ((LegacyAsyncOperation)state).Cancel();
+                },
+                operation);
+            }
+
+            operation.Completed += OnCompleted;
+
+            operation.Start();
+
+            return tcs.Task;
+
+            void OnCompleted(string result, bool cancelled)
+            {
+                registration.Dispose();
+
+                operation.Completed -= OnCompleted;
+
+                if (cancelled)
+                {
+                    tcs.TrySetCanceled(cancellationToken);
+                }
+                else
+                {
+                    tcs.TrySetResult(result);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Pretends to be a legacy async operation that doesn't natively support Task
+        /// </summary>
+        private class LegacyAsyncOperation
+        {
+            private Timer _timer;
+
+            public Action<string, bool> Completed;
+
+            private bool _cancelled;
+
+            public void Start()
+            {
+                _timer = new Timer(OnCompleted, null, new Random().Next(5) * 1000, Timeout.Infinite);
+            }
+
+            private void OnCompleted(object state)
+            {
+                var cancelled = _cancelled;
+                _cancelled = false;
+
+                Completed(Guid.NewGuid().ToString(), cancelled);
+
+                _timer.Dispose();
+            }
+
+            public void Cancel()
+            {
+                _cancelled = true;
+            }
+        }
     }
 }

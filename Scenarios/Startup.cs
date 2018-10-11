@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Scenarios.Services;
 
@@ -19,6 +20,13 @@ namespace Scenarios
             services.AddHttpClient("timeout", client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(10);
+            });
+
+            services.AddHttpContextAccessor();
+
+            services.AddDbContext<DbContext>(o =>
+            {
+                o.UseInMemoryDatabase("MyApplication");
             });
 
             services.AddMvc();

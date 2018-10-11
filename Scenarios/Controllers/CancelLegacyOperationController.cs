@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Scenarios.Services;
 
 namespace Scenarios.Controllers
 {
@@ -10,7 +11,7 @@ namespace Scenarios.Controllers
         [HttpGet("/legacy-cancellation-1")]
         public async Task<IActionResult> LegacyCancellationWithCancellationBad()
         {
-            var service = new LegacyServiceWithoutCancelationSupport();
+            var service = new LegacyService();
             var timeout = TimeSpan.FromSeconds(10);
 
             var serviceTask = service.DoAsyncOperation();
@@ -29,7 +30,7 @@ namespace Scenarios.Controllers
         [HttpGet("/legacy-cancellation-2")]
         public async Task<IActionResult> LegacyCancellationWithCancellationGood()
         {
-            var service = new LegacyServiceWithoutCancelationSupport();
+            var service = new LegacyService();
             var timeout = TimeSpan.FromSeconds(10);
 
             using (var cts = new CancellationTokenSource())
@@ -51,19 +52,6 @@ namespace Scenarios.Controllers
 
                 return Ok(await serviceTask);
             }
-        }
-    }
-
-    public class LegacyServiceWithoutCancelationSupport
-    {
-        public async Task<string> DoAsyncOperation()
-        {
-            var random = new Random();
-
-            // Mimick some asynchrous activity
-            await Task.Delay(random.Next(10) * 1000);
-
-            return Guid.NewGuid().ToString();
         }
     }
 }

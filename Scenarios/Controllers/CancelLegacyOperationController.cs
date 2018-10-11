@@ -9,49 +9,45 @@ namespace Scenarios.Controllers
     public class CancelLegacyOperationController : Controller
     {
         [HttpGet("/legacy-cancellation-1")]
-        public async Task<IActionResult> LegacyCancellationWithCancellationBad()
+        public async Task<IActionResult> LegacyCancellationWithTimeoutBad()
         {
             var service = new LegacyService();
             var timeout = TimeSpan.FromSeconds(10);
 
-            var serviceTask = service.DoAsyncOperation();
-            var delayTask = Task.Delay(timeout);
+            var result = await service.DoAsyncOperation().TimeoutAfterBad(timeout);
 
-            var resultTask = await Task.WhenAny(serviceTask, delayTask);
-            if (resultTask == delayTask)
-            {
-                // Operation cancelled
-                throw new OperationCanceledException();
-            }
-
-            return Ok(await serviceTask);
+            return Ok(result);
         }
 
         [HttpGet("/legacy-cancellation-2")]
-        public async Task<IActionResult> LegacyCancellationWithCancellationGood()
+        public async Task<IActionResult> LegacyCancellationWithTimeoutGood()
         {
             var service = new LegacyService();
             var timeout = TimeSpan.FromSeconds(10);
 
-            using (var cts = new CancellationTokenSource())
-            {
-                var serviceTask = service.DoAsyncOperation();
-                var delayTask = Task.Delay(timeout, cts.Token);
+            var result = await service.DoAsyncOperation().TimeoutAfter(timeout);
 
-                var resultTask = await Task.WhenAny(serviceTask, delayTask);
-                if (resultTask == delayTask)
-                {
-                    // Operation cancelled
-                    throw new OperationCanceledException();
-                }
-                else
-                {
-                    // Cancel the timer task so that it does not fire
-                    cts.Cancel();
-                }
+            return Ok(result);
+        }
 
-                return Ok(await serviceTask);
-            }
+        [HttpGet("/legacy-cancellation-3")]
+        public async Task<IActionResult> LegacyCancellationWithCancellationBad()
+        {
+            var service = new LegacyService();
+
+            var result = await service.DoAsyncOperation().WithCancellationBad(HttpContext.RequestAborted);
+
+            return Ok(result);
+        }
+
+        [HttpGet("/legacy-cancellation-4")]
+        public async Task<IActionResult> LegacyCancellationWithCancellationGood()
+        {
+            var service = new LegacyService();
+
+            var result = await service.DoAsyncOperation().WithCancellation(HttpContext.RequestAborted);
+
+            return Ok(result);
         }
     }
 }

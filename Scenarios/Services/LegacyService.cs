@@ -69,15 +69,13 @@ namespace Scenarios.Services
 
             var operation = new LegacyAsyncOperation();
 
-            var registration = default(CancellationTokenRegistration);
-
             if (cancellationToken.CanBeCanceled)
             {
-                registration = cancellationToken.Register(state =>
-                {
-                    ((LegacyAsyncOperation)state).Cancel();
-                },
-                operation);
+               cancellationToken.Register(state =>
+               {
+                   ((LegacyAsyncOperation)state).Cancel();
+               },
+               operation);
             }
 
             operation.Completed += OnCompleted;
@@ -88,10 +86,6 @@ namespace Scenarios.Services
 
             void OnCompleted(string result, bool cancelled)
             {
-                registration.Dispose();
-
-                operation.Completed -= OnCompleted;
-
                 if (cancelled)
                 {
                     tcs.TrySetCanceled(cancellationToken);
@@ -156,7 +150,7 @@ namespace Scenarios.Services
 
             public void Start()
             {
-                _timer = new Timer(OnCompleted, null, new Random().Next(5) * 1000, Timeout.Infinite);
+                _timer = new Timer(OnCompleted, null, new Random().Next(10) * 1000, Timeout.Infinite);
             }
 
             private void OnCompleted(object state)

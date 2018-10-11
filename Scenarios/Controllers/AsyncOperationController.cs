@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Scenarios.Services;
 
@@ -102,6 +103,26 @@ namespace Scenarios.Controllers
             var service = new LegacyService();
 
             var result = await service.DoAsyncOperation();
+
+            return Ok(result);
+        }
+
+        [HttpGet("/async-10")]
+        public async Task<IActionResult> AsyncCallLegacyBad()
+        {
+            var service = new LegacyService();
+
+            var result = await service.DoAsyncOperationOverLegacyBad(HttpContext.RequestAborted);
+
+            return Ok(result);
+        }
+
+        [HttpGet("/async-11")]
+        public async Task<IActionResult> AsyncCallLegacyGood()
+        {
+            var service = new LegacyService();
+
+            var result = await service.DoAsyncOperationOverLegacy(HttpContext.RequestAborted);
 
             return Ok(result);
         }

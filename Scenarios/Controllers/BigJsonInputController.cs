@@ -13,7 +13,7 @@ namespace Scenarios.Controllers
     public class BigJsonInputController : Controller
     {
         [HttpPost("/big-json-input-1")]
-        public IActionResult BigJsonInputWorst()
+        public IActionResult BigJsonSynchronousInput()
         {
             var json = new StreamReader(Request.Body).ReadToEnd();
 

@@ -13,6 +13,11 @@ namespace Scenarios
         {
             services.AddHttpClient();
 
+            services.AddHttpClient("timeout", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
+
             services.AddMvc();
         }
 

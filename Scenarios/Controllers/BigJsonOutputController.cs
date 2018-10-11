@@ -75,7 +75,7 @@ namespace Scenarios.Controllers
 
                 var serializer = new JsonSerializer();
 
-                // THIS is a problem, we're doing syncronou IO here
+                // THIS is a problem, we're doing synchronous IO here
                 var obj = serializer.Deserialize<PokemonData>(reader);
 
                 return Ok(obj);

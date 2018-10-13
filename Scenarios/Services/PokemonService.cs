@@ -11,7 +11,7 @@ namespace Scenarios.Services
     /// <summary>
     /// This service shows the various ways to make an outgoing HTTP request to get a JSON payload. It shows the various tradeoffs involved in doing this. It
     /// uses JSON.NET to perform Deserialization. In general there are 3 approaches:
-    /// 1. Buffer the response in memory before handing it to the JSON serializer. This could lead to out of memory exceptions which means your server can be DOSed.
+    /// 1. Buffer the response in memory before handing it to the JSON serializer. This could lead to out of memory exceptions which can lead to a Denial Of Service.
     /// 2. Stream the response and synchronously read from the stream. This can lead to thread pool starvation.
     /// 3. Stream the response and asynchronously read from the stream.
     /// </summary>
@@ -90,7 +90,7 @@ namespace Scenarios.Services
         public async Task<PokemonData> GetPokemonManualBufferedAsync()
         {
             // This buffers the entire response into memory so that we don't end up doing blocking IO when 
-            // de-serializing the JSON. If the payload is *HUGE* this could result in large allocations that lead to a DOS.
+            // de-serializing the JSON. If the payload is *HUGE* this could result in large allocations that lead to a Denial Of Service.
             using (var response = await _client.GetAsync(_url))
             {
                 // Get the response stream

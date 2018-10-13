@@ -5,6 +5,10 @@ using Scenarios.Services;
 
 namespace Scenarios.Controllers
 {
+    /// <summary>
+    /// This controller shows to various ways people attempt to blocking code over an async API. There is no 
+    /// good way to turn asynchronous code into synchronous code. All of these blocking calls can cause thread pool starvation.
+    /// </summary>
     public class AsyncOperationController : Controller
     {
         [HttpGet("/async-1")]
@@ -87,6 +91,9 @@ namespace Scenarios.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// DoSyncOperationWithAsyncReturn has an async API over a synchronous call.
+        /// </summary>
         [HttpGet("/async-8")]
         public async Task<IActionResult> GoodBlocking()
         {

@@ -19,16 +19,12 @@ namespace Scenarios.Controllers
 
             var rootobject = JsonConvert.DeserializeObject<PokemonData>(json);
 
-            GC.KeepAlive(rootobject);
-
             return Accepted();
         }
 
         [HttpPost("/big-json-input-2")]
         public IActionResult BigJsonInput([FromBody]PokemonData rootobject)
         {
-            GC.KeepAlive(rootobject);
-
             return Accepted();
         }
 
@@ -38,8 +34,6 @@ namespace Scenarios.Controllers
             var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
             var rootobject = JsonConvert.DeserializeObject<PokemonData>(json);
-
-            GC.KeepAlive(rootobject);
 
             return Accepted();
         }
@@ -63,8 +57,6 @@ namespace Scenarios.Controllers
             var serializer = new JsonSerializer();
 
             var rootobject = serializer.Deserialize<PokemonData>(jsonReader);
-
-            GC.KeepAlive(rootobject);
 
             return Accepted();
         }

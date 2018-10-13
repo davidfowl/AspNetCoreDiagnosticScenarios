@@ -11,10 +11,17 @@ namespace Scenarios.Controllers
 {
     public class EmphemeralOperationController : Controller
     {
-        [HttpGet("/timer-leak")]
-        public IActionResult Index()
+        [HttpGet("/timer-1")]
+        public IActionResult TimerLeak()
         {
             var operation = new EphemeralOperation();
+            return Ok();
+        }
+
+        [HttpGet("/timer-2")]
+        public IActionResult TimeLeakFix()
+        {
+            var operation = new EphemeralOperation2();
             return Ok();
         }
     }

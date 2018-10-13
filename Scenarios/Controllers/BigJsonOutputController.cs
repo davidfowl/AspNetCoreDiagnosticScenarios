@@ -15,7 +15,7 @@ namespace Scenarios.Controllers
         [HttpGet("/big-json-content-1")]
         public async Task<IActionResult> BigContentJsonBad()
         {
-            var obj = await _pokemonService.GetPokemonBadAsync();
+            var obj = await _pokemonService.GetPokemonBufferdStringAsync();
 
             return Ok(obj);
         }
@@ -29,17 +29,24 @@ namespace Scenarios.Controllers
         }
 
         [HttpGet("/big-json-content-3")]
-        public async Task<IActionResult> BigContentJsonManualBad()
+        public async Task<IActionResult> BigContentJsonManualUnbufferedBad()
         {
-            var obj = await _pokemonService.GetPokemonManualBadAsync();
+            var obj = await _pokemonService.GetPokemonManualUnbufferedBadAsync();
 
             return Ok(obj);
         }
 
         [HttpGet("/big-json-content-4")]
-        public async Task<IActionResult> BigContentJsonManualGood()
+        public async Task<IActionResult> BigContentJsonManualUnbufferedGood()
         {
-            var obj = await _pokemonService.GetPokemonManualGoodAsync();
+            var obj = await _pokemonService.GetPokemonManualUnbufferedGoodAsync();
+            return Ok(obj);
+        }
+
+        [HttpGet("/big-json-content-5")]
+        public async Task<IActionResult> BigContentJsonManualUBuffered()
+        {
+            var obj = await _pokemonService.GetPokemonManualBufferedAsync();
             return Ok(obj);
         }
     }

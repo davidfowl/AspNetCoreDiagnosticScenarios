@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Scenarios.Services
 {
@@ -15,15 +12,17 @@ namespace Scenarios.Services
     public class EphemeralOperation : IDisposable
     {
         private Timer _timer;
+        private int _ticks;
 
         public EphemeralOperation()
         {
-            _timer = new Timer(OnTimerCallback, this, 1000, 1000);
-        }
-
-        private static void OnTimerCallback(object state)
-        {
-
+            _timer = new Timer(state =>
+            {
+                _ticks++;
+            }, 
+            null, 
+            1000, 
+            1000);
         }
 
         public void Dispose()

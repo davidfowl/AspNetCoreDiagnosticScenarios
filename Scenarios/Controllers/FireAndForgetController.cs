@@ -34,7 +34,7 @@ namespace Scenarios.Controllers
         [HttpGet("/fire-and-forget-2")]
         public IActionResult FireAndForget2([FromServices]PokemonDbContext context)
         {
-            // This uses Task.Run instead of ThreadPool.QueueUserWorkItem. It's mostly equivalent to the FireAndForget2 but since we're using 
+            // This uses Task.Run instead of ThreadPool.QueueUserWorkItem. It's mostly equivalent to the FireAndForget1 but since we're using 
             // async Task instead of async void, unhandled exceptions won't crash the process. They will however trigger the TaskScheduler.UnobservedTaskException
             // event when exceptions go unhandled.
             Task.Run(async () =>

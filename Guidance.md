@@ -24,6 +24,8 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
+This example uses the await keyword to get the result from `CallDependencyAsync`.
+
 ❌ **BAD**
 
 ```C#
@@ -34,7 +36,9 @@ public async int DoSomethingAsync()
 }
 ```
 
-### Async void is bad
+This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#sync-over-async) (more on this later).
+
+### Async void
 
 ### Always await methods that return tasks
 

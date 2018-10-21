@@ -206,6 +206,8 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
+:warning: **NOTE: There are 2 enums that look alike. [TaskCreationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [TaskContinuationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
+
 ## Always dispose CancellationTokenSource(s) used for timeouts
 
 CancellationTokenSources that are used for timeouts (are created with timers or uses the CancelAfter method), can put pressure on the timer queue if not disposed. 

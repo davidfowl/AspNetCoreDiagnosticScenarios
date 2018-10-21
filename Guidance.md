@@ -191,7 +191,6 @@ public async Task<int> DoSomethingAsync()
 ✔️**GOOD** This example uses TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
 
 ```C#
-```C#
 public async Task<int> DoSomethingAsync()
 {
     var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

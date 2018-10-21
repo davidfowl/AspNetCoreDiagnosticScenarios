@@ -336,7 +336,7 @@ public class BackgroundQueue
 
 ❌ **BAD** This calling code is creating an async void method implicitly. The compiler fully supports this today.
 
-```
+```C#
 public class Program
 {
     public void Main(string[] args)

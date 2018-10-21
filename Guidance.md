@@ -215,24 +215,73 @@ The above tries to distill general guidance but doesn't do justice to the kinds 
 
 #### Timer callbacks
 
-❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. As a result, async void is used.
+❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. This example uses async void to accomplish it and as a result
+can crash the process if there's an exception thrown.
 
 ```C#
-var timer = new Timer(Heartbeat, null, 1000, 1000);
-
-public static async void Heartbeat(object state)
+public class Pinger
 {
-    await httpClient.GetAsync("http://mybackend/api/ping");
+    private readonly Timer _timer;
+    private readonly HttpClient _client;
+    
+    public Pinger(HttpClient client)
+    {
+        _client = new HttpClient();
+        _timer = new Timer(Heartbeat, null, 1000, 1000);
+    }
+
+    public async void Heartbeat(object state)
+    {
+        await httpClient.GetAsync("http://mybackend/api/ping");
+    }
 }
 ```
 
-❌ **BAD** This attempts to block in the timer callback. This may result in thread pool starvation and is an example of [sync over async]()
+❌ **BAD** This attempts to block in the timer callback. This may result in thread pool starvation and is an example of [sync over async](#warning-sync-over-async)
 
 ```C#
-var timer = new Timer(Heartbeat, null, 1000, 1000);
-
-public static void Heartbeat(object state)
+public class Pinger
 {
-    httpClient.GetAsync("http://mybackend/api/ping").GetAwaiter().GetResult();
+    private readonly Timer _timer;
+    private readonly HttpClient _client;
+    
+    public Pinger(HttpClient client)
+    {
+        _client = new HttpClient();
+        _timer = new Timer(Heartbeat, null, 1000, 1000);
+    }
+
+    public void Heartbeat(object state)
+    {
+        httpClient.GetAsync("http://mybackend/api/ping").GetAwaiter().GetResult();
+    }
+}
+```
+
+✔️**GOOD** This example uses an async Task based method and discards the Task in the Timer callback. If this method fails, it will not crash the process.
+Instead, it will fire the TaskScheduler.UnobservedTaskException event.
+
+```C#
+public class Pinger
+{
+    private readonly Timer _timer;
+    private readonly HttpClient _client;
+    
+    public Pinger(HttpClient client)
+    {
+        _client = new HttpClient();
+        _timer = new Timer(Heartbeat, null, 1000, 1000);
+    }
+
+    public void Heartbeat(object state)
+    {
+        // Discard the result
+        _ = DoAsyncPing();
+    }
+
+    private static async Task DoAsyncPing()
+    {
+        await httpClient.GetAsync("http://mybackend/api/ping");
+    }
 }
 ```

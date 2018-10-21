@@ -206,3 +206,9 @@ public async Task<int> DoSomethingAsync()
     return tcs.Task;
 }
 ```
+
+## Scenarios
+
+The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.
+
+

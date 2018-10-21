@@ -51,6 +51,7 @@ public class MyController : Controller
     public IActionResult Post()
     {
         BackgroundOperationAsync();
+        return Accepted();
     }
     
     public async void BackgroundOperationAsync()
@@ -70,6 +71,7 @@ public class MyController : Controller
     public IActionResult Post()
     {
         Task.Run(BackgroundOperationAsync);
+        return Accepted();
     }
     
     public async Task BackgroundOperationAsync()

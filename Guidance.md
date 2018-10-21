@@ -207,6 +207,41 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
+### Always dispose cancellation tokens used for timeouts
+
+CancellationTokenSources that are used for timeouts (are created with timers or uses the CancelAfter method), can put pressure on the timer queue if not disposed. 
+
+❌ **BAD** This example does not dispose the `CancellationTokenSource` and as a result the timer stays in the queue for 10 seconds after each request is made.
+
+```C#
+public async Task<Stream> HttpClientAsyncWithCancellationBad()
+{
+    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+    using (var client = _httpClientFactory.CreateClient())
+    {
+        var response = await client.GetAsync("http://backend/api/1", cts.Token);
+        return await response.Content.ReadAsStreamAsync();
+    }
+}
+```
+
+✔️**GOOD** This example disposes the `CancellationTokenSource` and properly removes the timer from the queue.
+
+```
+public async Task<Stream> HttpClientAsyncWithCancellationGood()
+{
+    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+    {
+        using (var client = _httpClientFactory.CreateClient())
+        {
+            var response = await client.GetAsync("http://backend/api/1", cts.Token);
+            return await response.Content.ReadAsStreamAsync();
+        }
+    }
+}
+```
+
 ## Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.

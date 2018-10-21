@@ -24,6 +24,8 @@ public async int DoSomethingAsync()
 }
 ```
 
+This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#sync-over-async) (more on this later).
+
 ✔️**GOOD**
 
 ```C#
@@ -35,8 +37,6 @@ public async Task<int> DoSomethingAsync()
 ```
 
 This example uses the await keyword to get the result from `CallDependencyAsync`.
-
-This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#sync-over-async) (more on this later).
 
 ### Async void
 
@@ -82,8 +82,9 @@ public class MyController : Controller
 }
 ```
 
-
 ### Avoid using Task.Result and Task.Wait
+
+There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. 
 
 ### Prefer await over ContinueWith
 

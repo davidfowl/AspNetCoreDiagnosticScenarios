@@ -207,7 +207,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-### Always dispose cancellation tokens used for timeouts
+### Always dispose CancellationTokenSources used for timeouts
 
 CancellationTokenSources that are used for timeouts (are created with timers or uses the CancelAfter method), can put pressure on the timer queue if not disposed. 
 

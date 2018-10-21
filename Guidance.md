@@ -255,9 +255,7 @@ Cancellation is coorperative in .NET. Everything in the call chain has to be exp
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.
 
-## Synchronous callbacks
-
-### Timer callbacks
+## Timer callbacks
 
 ❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. This example uses async void to accomplish it and as a result
 can crash the process if there's an exception thrown.
@@ -330,7 +328,7 @@ public class Pinger
 }
 ```
 
-### Implicit async void delegates
+## Implicit async void delegates
 
 Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.
 
@@ -371,7 +369,7 @@ public class BackgroundQueue
 }
 ```
 
-### ConcurrentDictionary.GetOrAdd
+## ConcurrentDictionary.GetOrAdd
 
 It's pretty common to cache the result of an asynchronous operation and ConcurrentDictionary is a good data structure for doing that. GetOrAdd is a convenience API for trying to get an item if it's already there or adding it if it isn't. The callback is synchronous so it's tempting to write code that uses Task.Result to produce the value of an asynchronous process but that can lead to thread pool starvation.
 

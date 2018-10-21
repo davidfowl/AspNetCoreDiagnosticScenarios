@@ -4,14 +4,13 @@ This document serves as a guide for writing scalable services in ASP.NET Core. S
 web services. The examples shown here are based on experiences with customer applications and issues found on Github and Stack Overflow. Besides general guidance,
 this repository will have guides on how to diagnose common issue in the various tools available (WinDbg, lldb, sos, Visual Studio, PerfView etc).
 
-
-## Asynchronous Programming
+# Asynchronous Programming
 
 Asynchronous programming has been around for several years on the .NET platform but has historically been very difficult to do well. Since the introduction of async/await
 in C# 5 asynchronous programming has become mainstream. Modern frameworks (like ASP.NET Core) are fully asynchronous and it's very hard to avoid the async keyword when writing
 web services. As a result, there's been lots of confusion on the best practices for async and how to use it properly. Lets start with some of the basic rules:
 
-### Asynchrony is viral 
+## Asynchrony is viral 
 
 Once you go async, all of your callers **MUST** be async, there's no good way gradually migrate callers to be async. It's all or nothing.
 
@@ -35,7 +34,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-### Async void
+## Async void
 
 Use of async void in ASP.NET Core applications is *ALWAYS* bad. Avoid it, never do it. Typically, it's used when developers are trying to implement fire and forget patterns triggered by a controller action. Async void methods will crash the process if an exception is thrown. We'll look at more of the patterns that cause developers to do this in ASP.NET Core applications but here's a simple example:
 
@@ -79,11 +78,11 @@ public class MyController : Controller
 }
 ```
 
-### Avoid using Task.Result and Task.Wait
+## Avoid using Task.Result and Task.Wait
 
 There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. 
 
-#### :warning: Sync over async
+### :warning: Sync over async
 
 Using Task.Result or Task.Wait to block wait on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over async". Here is what happens at a very high level:
 
@@ -93,7 +92,7 @@ Using Task.Result or Task.Wait to block wait on an asynchronous operation to com
 
 The result is that we need to use 2 threads instead of 1 to complete synchronous operations. This usually leads to [thread pool starvation](https://blogs.msdn.microsoft.com/vancem/2018/10/16/diagnosing-net-core-threadpool-starvation-with-perfview-why-my-service-is-not-saturating-all-cores-or-seems-to-stall/) and results in service outages.
 
-#### :warning: Deadlocks
+### :warning: Deadlocks
 
 The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has lead to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's is no good way to block waiting for a Task to complete.
 
@@ -138,7 +137,7 @@ public string DoOperationBlocking7()
 }
 ```
 
-### Prefer await over ContinueWith
+## Prefer await over ContinueWith
 
 `Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without a reliance the language. Although these
 methods are still valid to use, we generally recommend that you prefer async/await to using ContinueWith. ContinueWith also does not capture the `SynchronizationContext` and as a result is actually semantically different to async/await.
@@ -165,7 +164,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-### Always create TaskCompletionSource\<T\> with TaskCreationOptions.RunContinuationsAsynchronously
+## Always create TaskCompletionSource\<T\> with TaskCreationOptions.RunContinuationsAsynchronously
 
 `TaskCompletionSource<T>` is an important building block for libraries trying to adapt things that are not inherently awaitable to be awaitable via a `Task`. It is also commonly used to build higher level operations (such as batching and other combinatiors) on top of existing asynchronous APIs. By default, `Task` continuations will run *inline* on the same thread that calls Try/Set(Result/Exception/Canceled). As a library author, this means having to understand that calling code can resume directly on your thread. This is extremely dangerous and can result in deadlocks, thread pool starvation, corruption of state (if code runs unexpectedly) and more. 
 
@@ -207,7 +206,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-### Always dispose CancellationTokenSources used for timeouts
+## Always dispose CancellationTokenSource(s) used for timeouts
 
 CancellationTokenSources that are used for timeouts (are created with timers or uses the CancelAfter method), can put pressure on the timer queue if not disposed. 
 
@@ -242,13 +241,23 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 }
 ```
 
-## Scenarios
+## Always flow `CancellationToken(s)` to APIs being called that also take a CancellationToken
+
+Cancellation is coorperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
+
+❌ **BAD** 
+
+```C#
+
+```
+
+# Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.
 
-### Synchronous callbacks
+## Synchronous callbacks
 
-#### Timer callbacks
+### Timer callbacks
 
 ❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. This example uses async void to accomplish it and as a result
 can crash the process if there's an exception thrown.
@@ -321,7 +330,7 @@ public class Pinger
 }
 ```
 
-#### Implicit async void delegates
+### Implicit async void delegates
 
 Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.
 
@@ -362,7 +371,7 @@ public class BackgroundQueue
 }
 ```
 
-#### ConcurrentDictionary.GetOrAdd
+### ConcurrentDictionary.GetOrAdd
 
 It's pretty common to cache the result of an asynchronous operation and ConcurrentDictionary is a good data structure for doing that. GetOrAdd is a convenience API for trying to get an item if it's already there or adding it if it isn't. The callback is synchronous so it's tempting to write code that uses Task.Result to produce the value of an asynchronous process but that can lead to thread pool starvation.
 

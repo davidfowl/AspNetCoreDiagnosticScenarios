@@ -78,6 +78,73 @@ public class MyController : Controller
 }
 ```
 
+## Avoid using Task.Run for long running work that blocks the thread
+
+`Task.Run` will queue a work item to thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some rasonable timeframe). Stealing a thread pool thread for long running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
+
+❌ **BAD** This example steals a thread pool thread forever, to execute queued work on a `BlockingCollection<T>`.
+
+```C#
+public class QueueProcessor
+{
+    private readonly BlockingCollection<Message> _messageQueue = new BlockingCollection<Message>();
+    
+    public void StartProcessing()
+    {
+        Task.Run(ProcessQueue);
+    }
+    
+    public void Enqueue(Message message)
+    {
+        _messageQueue.Add(message);
+    }
+    
+    private void ProcessQueue()
+    {
+        foreach (var item in _messageQueue.GetConsumingEnumerable())
+        {
+             ProcessItem(item);
+        }
+    }
+    
+    private void ProcessItem(Message message) { }
+}
+```
+
+✔️**GOOD** This example uses a dedicated thread to process the message queue instead of a thread pool thread.
+
+```C#
+public class QueueProcessor
+{
+    private readonly BlockingCollection<Message> _messageQueue = new BlockingCollection<Message>();
+    
+    public void StartProcessing()
+    {
+        var thread = new Thread(ProcessQueue) 
+        {
+            // This is important as it allows the process to exit without
+            IsBackground = true
+        };
+        thread.Start();
+    }
+    
+    public void Enqueue(Message message)
+    {
+        _messageQueue.Add(message);
+    }
+    
+    private void ProcessQueue()
+    {
+        foreach (var item in _messageQueue.GetConsumingEnumerable())
+        {
+             ProcessItem(item);
+        }
+    }
+    
+    private void ProcessItem(Message message) { }
+}
+```
+
 ## Avoid using Task.Result and Task.Wait
 
 There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. 
@@ -564,6 +631,7 @@ public class PersonController : Controller
    }
 }
 ```
+
 
 ## Constructors
 

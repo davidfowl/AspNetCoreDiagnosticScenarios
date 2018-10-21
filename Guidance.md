@@ -211,7 +211,7 @@ public async Task<int> DoSomethingAsync()
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.
 
-### Async void
+### Synchronous callbacks
 
 #### Timer callbacks
 
@@ -283,5 +283,46 @@ public class Pinger
     {
         await httpClient.GetAsync("http://mybackend/api/ping");
     }
+}
+```
+
+### Implicit async void delegates
+
+Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.
+
+❌ **BAD** This will force callers to either block in the callback or use an async void delegate.
+
+```C#
+public class BackgroundQueue
+{
+    public static void FireAndForget(Action action) { }
+}
+```
+
+❌ **BAD** This calling code is creating an async void method implicitly. The compiler fully supports this today.
+
+```
+public class Program
+{
+    public void Main(string[] args)
+    {
+        var httpClient = new HttpClient();
+        BackgroundQueue.FireAndForget(async () =>
+        {
+            await httpClient.GetAsync("http://pinger/api/1");
+        });
+        
+        Console.ReadLine();
+    }
+}
+```
+
+✔️**GOOD** This BackgroundQueue implementation offers both sync and async overloads.
+
+```C#
+public class BackgroundQueue
+{
+    public static void FireAndForget(Action action) { }
+    public static void FireAndForget(Func<Task> action) { }
 }
 ```

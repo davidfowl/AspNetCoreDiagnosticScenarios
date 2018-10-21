@@ -267,6 +267,29 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 }
 ```
 
+## Cancelling uncancellable operations
+
+One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means firing off another task
+with a timeout or `CancellationToken` and using `Task.WhenAny` to detect proper completion or cancellation.
+
+❌ **BAD** This example uses `Task.Delay(-1, token)` to create the `Task` fires when the cancellationToken fires. This will leak memory if the cancellationToken does not fire. `Task.Delay` registers a callback that triggers the `Task` to complete if the timer fires, but if it doesn't fire, there's no way to dispose the `CancellationTokenRegistration`. This can lead to a memory leak.
+
+```
+public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+{
+    var delayTask = Task.Delay(-1, cancellationToken);
+
+    var resultTask = await Task.WhenAny(task, delayTask);
+    if (resultTask == delayTask)
+    {
+        // Operation cancelled
+        throw new OperationCanceledException();
+    }
+
+    return await task;
+}
+```
+
 # Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.

@@ -181,6 +181,7 @@ public async Task<int> DoSomethingAsync()
     var operation = new LegacyAsyncOperation();
     operation.Completed += result =>
     {
+        // Code awaiting on this task will resume on this thread!
         tcs.SetResult(result);
     };
     
@@ -198,6 +199,7 @@ public async Task<int> DoSomethingAsync()
     var operation = new LegacyAsyncOperation();
     operation.Completed += result =>
     {
+        // Code awaiting on this task will resume on a different thread pool thread
         tcs.SetResult(result);
     };
     

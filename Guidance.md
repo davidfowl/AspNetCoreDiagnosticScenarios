@@ -4,6 +4,7 @@ This document serves as a guide for writing scalable services in ASP.NET Core. S
 web services. The examples shown here are based on experiences with customer applications and issues found on Github and Stack Overflow. Besides general guidance,
 this repository will have guides on how to diagnose common issue in the various tools available (WinDbg, lldb, sos, Visual Studio, PerfView etc).
 
+
 ## Asynchronous Programming
 
 Asynchronous programming has been around for several years on the .NET platform but has historically been very difficult to do well. Since the introduction of async/await
@@ -24,7 +25,7 @@ public async int DoSomethingAsync()
 }
 ```
 
-This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#sync-over-async) (more on this later).
+This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 
 ✔️**GOOD**
 
@@ -84,7 +85,7 @@ public class MyController : Controller
 
 ### Avoid using Task.Result and Task.Wait
 
-There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. 
+There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. Using Task.Result or Task.Wait to block wait on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over Async". The other issue with Task.Wait and Task.Result occurs when running in environments where a SynchronizationContext
 
 ### Prefer await over ContinueWith
 

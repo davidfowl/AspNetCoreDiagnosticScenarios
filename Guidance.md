@@ -140,7 +140,30 @@ public string DoOperationBlocking7()
 
 ### Prefer await over ContinueWith
 
+`Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without a reliance the language. Although these
+methods are still valid to use, we generally recommend that you prefer async/await to using ContinueWith. ContinueWith also does not capture the `SynchronizationContext` and as a result is actually semantically different to async/await.
 
+❌ **BAD** The example uses ContinueWith instead of async
+
+```C#
+public async Task<int> DoSomethingAsync()
+{
+    return CallDependencyAsync().ContinueWith(task =>
+    {
+        return task.Result + 1;
+    });
+}
+```
+
+✔️**GOOD** This example uses the await keyword to get the result from `CallDependencyAsync`.
+
+```C#
+public async Task<int> DoSomethingAsync()
+{
+    var result = await CallDependencyAsync();
+    return result + 1;
+}
+```
 
 ### Always create TaskCompletionSource with TaskCreationOptions.RunContinuationsAsynchronously
 

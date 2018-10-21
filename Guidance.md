@@ -211,4 +211,28 @@ public async Task<int> DoSomethingAsync()
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.
 
+### Async void
 
+#### Timer callbacks
+
+❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. As a result, async void is used.
+
+```C#
+var timer = new Timer(Heartbeat, null, 1000, 1000);
+
+public static async void Heartbeat(object state)
+{
+    await httpClient.GetAsync("http://mybackend/api/ping");
+}
+```
+
+❌ **BAD** This attempts to block in the timer callback. This may result in thread pool starvation and is an example of [sync over async]()
+
+```C#
+var timer = new Timer(Heartbeat, null, 1000, 1000);
+
+public static void Heartbeat(object state)
+{
+    httpClient.GetAsync("http://mybackend/api/ping").GetAwaiter().GetResult();
+}
+```

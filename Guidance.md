@@ -58,7 +58,7 @@ public class MyController : Controller
 }
 ```
 
-✔️**GOOD** Task returning methods are better since unhandled exceptions trigger the TaskScheduler.UnobservedTaskException.
+✔️**GOOD** Task returning methods are better since unhandled exceptions trigger the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
 
 ```C#
 public class MyController : Controller
@@ -415,7 +415,7 @@ public class Pinger
 ```
 
 ✔️**GOOD** This example uses an async Task based method and discards the Task in the Timer callback. If this method fails, it will not crash the process.
-Instead, it will fire the TaskScheduler.UnobservedTaskException event.
+Instead, it will fire the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
 
 ```C#
 public class Pinger

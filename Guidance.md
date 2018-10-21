@@ -241,14 +241,30 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 }
 ```
 
-## Always flow `CancellationToken(s)` to APIs being called that also take a CancellationToken
+## Always flow CancellationToken(s) to APIs being called that also take a CancellationToken
 
 Cancellation is coorperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
 
-❌ **BAD** 
+❌ **BAD** This example neglects to pass the CancellationToken to `Stream.ReadAsync` making the operation effectively not cancellable.
 
 ```C#
+public async Task<string> DoAsyncThing(CancellationToken cancellationToken = default)
+{
+   byte[] buffer = new byte[1024];
+   int read = await _stream.ReadAsync(buffer, 0, buffer.Length);
+   return Encoding.UTF8.GetString(buffer, 0, read);
+}
+```
 
+✔️**GOOD** This example passes the CancellationToken into `Stream.ReadAsync`.
+
+```C#
+public async Task<string> DoAsyncThing(CancellationToken cancellationToken = default)
+{
+   byte[] buffer = new byte[1024];
+   int read = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+   return Encoding.UTF8.GetString(buffer, 0, read);
+}
 ```
 
 # Scenarios

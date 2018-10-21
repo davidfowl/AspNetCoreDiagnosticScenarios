@@ -290,6 +290,32 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 }
 ```
 
+✔️**GOOD** This example disposes the `CancellationTokenRegistration` when one of the `Task(s)` complete.
+
+```C#
+public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+{
+    var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // This disposes the registration as soon as one of the tasks trigger
+    using (cancellationToken.Register(state =>
+    {
+        ((TaskCompletionSource<object>)state).TrySetResult(null);
+    },
+    tcs))
+    {
+        var resultTask = await Task.WhenAny(task, tcs.Task);
+        if (resultTask == tcs.Task)
+        {
+            // Operation cancelled
+            throw new OperationCanceledException(cancellationToken);
+        }
+
+        return await task;
+    }
+}
+```
+
 # Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.

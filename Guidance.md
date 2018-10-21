@@ -272,6 +272,8 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means firing off another task
 with a timeout or `CancellationToken` and using `Task.WhenAny` to detect proper completion or cancellation.
 
+### Using CancellationTokens
+
 ❌ **BAD** This example uses `Task.Delay(-1, token)` to create the `Task` fires when the `CancellationToken` fires, but if it doesn't fire, there's no way to dispose the `CancellationTokenRegistration`. This can lead to a memory leak.
 
 ```C#
@@ -310,6 +312,52 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
         {
             // Operation cancelled
             throw new OperationCanceledException(cancellationToken);
+        }
+
+        return await task;
+    }
+}
+```
+
+### Using a timeout
+
+❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers that can flood the timer queue. 
+
+```C#
+public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
+{
+    var delayTask = Task.Delay(timeout);
+
+    var resultTask = await Task.WhenAny(task, delayTask);
+    if (resultTask == delayTask)
+    {
+        // Operation cancelled
+        throw new OperationCanceledException();
+    }
+
+    return await task;
+}
+```
+
+✔️**GOOD** This example cancels the timer if the operation succesfully completes.
+
+```C#
+public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
+{
+    using (var cts = new CancellationTokenSource())
+    {
+        var delayTask = Task.Delay(timeout, cts.Token);
+
+        var resultTask = await Task.WhenAny(task, delayTask);
+        if (resultTask == delayTask)
+        {
+            // Operation cancelled
+            throw new OperationCanceledException();
+        }
+        else
+        {
+            // Cancel the timer task so that it does not fire
+            cts.Cancel();
         }
 
         return await task;

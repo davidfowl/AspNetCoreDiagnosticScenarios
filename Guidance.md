@@ -228,7 +228,7 @@ public async Task<Stream> HttpClientAsyncWithCancellationBad()
 
 ✔️**GOOD** This example disposes the `CancellationTokenSource` and properly removes the timer from the queue.
 
-```
+```C#
 public async Task<Stream> HttpClientAsyncWithCancellationGood()
 {
     using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))

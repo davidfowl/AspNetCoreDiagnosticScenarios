@@ -562,3 +562,9 @@ public class PersonController : Controller
    }
 }
 ```
+
+## Constructors
+
+Constructors are synchronous. If you need to initialize some logic that may be asynchronous, there are a couple patterns for dealing with this.
+
+TODO: Samples

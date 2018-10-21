@@ -15,7 +15,7 @@ web services. As a result, there's been lots of confusion on the best practices 
 
 Once you go async, all of your callers **MUST** be async, there's no good way gradually migrate callers to be async. It's all or nothing (very much like generics).
 
-❌ **BAD**
+❌ **BAD** This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 
 ```C#
 public async int DoSomethingAsync()
@@ -25,9 +25,7 @@ public async int DoSomethingAsync()
 }
 ```
 
-This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
-
-✔️**GOOD**
+✔️**GOOD** This example uses the await keyword to get the result from `CallDependencyAsync`.
 
 ```C#
 public async Task<int> DoSomethingAsync()
@@ -36,8 +34,6 @@ public async Task<int> DoSomethingAsync()
     return result + 1;
 }
 ```
-
-This example uses the await keyword to get the result from `CallDependencyAsync`.
 
 ### Async void
 
@@ -143,6 +139,8 @@ public string DoOperationBlocking7()
 ```
 
 ### Prefer await over ContinueWith
+
+
 
 ### Always create TaskCompletionSource with TaskCreationOptions.RunContinuationsAsynchronously
 

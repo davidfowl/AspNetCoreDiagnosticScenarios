@@ -286,7 +286,7 @@ public class Pinger
 }
 ```
 
-### Implicit async void delegates
+#### Implicit async void delegates
 
 Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.
 
@@ -317,12 +317,93 @@ public class Program
 }
 ```
 
-✔️**GOOD** This BackgroundQueue implementation offers both sync and async overloads.
+✔️**GOOD** This BackgroundQueue implementation offers both sync and async callback overloads.
 
 ```C#
 public class BackgroundQueue
 {
     public static void FireAndForget(Action action) { }
     public static void FireAndForget(Func<Task> action) { }
+}
+```
+
+#### ConcurrentDictionary.GetOrAdd
+
+It's pretty common to cache the result of an asynchronous operation and ConcurrentDictionary is a good data structure for doing that. GetOrAdd is a convenience API for trying to get an item if it's already there or adding it if it isn't. The callback is synchronous so it's tempting to write code that uses Task.Result to produce the value of an asynchronous process but that can lead to thread pool starvation.
+
+❌ **BAD** This may result in thread pool starvation since we're blocking the request thread if the person data is not cached.
+
+```C#
+public class PersonController : Controller
+{
+   private AppDbContext _db;
+   
+   // This cache needs expiration
+   private static ConcurrentDictionary<int, Person> _cache = new ConcurrentDictionary<int, Person>();
+   
+   public PersonController(AppDbContext db)
+   {
+      _db = db;
+   }
+   
+   public IActionResult Get(int id)
+   {
+       var person = _cache.GetOrAdd(id, (key) => db.People.FindAsync(key).Result);
+       return Ok(person);
+   }
+}
+```
+
+❌ **BAD** This won't result in thread pool starvation but will potentially run the cache callback multiple times in parallel.
+
+```C#
+public class PersonController : Controller
+{
+   private AppDbContext _db;
+   
+   // This cache needs expiration
+   private static ConcurrentDictionary<int, Task<Person>> _cache = new ConcurrentDictionary<int, Task<Person>>();
+   
+   public PersonController(AppDbContext db)
+   {
+      _db = db;
+   }
+   
+   public async Task<IActionResult> Get(int id)
+   {
+       var person = await _cache.GetOrAdd(id, (key) => db.People.FindAsync(key));
+       return Ok(person);
+   }
+}
+```
+
+✔️**GOOD** This implementation fixes the multiple executing callback issue by using the async lazy pattern.
+
+```C#
+public class PersonController : Controller
+{
+   private AppDbContext _db;
+   
+   // This cache needs expiration
+   private static ConcurrentDictionary<int, AsyncLazy<Person>> _cache = new ConcurrentDictionary<int, AsyncLazy<Person>>();
+   
+   public PersonController(AppDbContext db)
+   {
+      _db = db;
+   }
+   
+   public async Task<IActionResult> Get(int id)
+   {
+       var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => db.People.FindAsync(key)));
+       return Ok(person);
+   }
+   
+   private class AsyncLazy<T> : Lazy<Task<T>>
+   {
+      public AsyncLazy(Func<Task<T>> valueFactory) : base(valueFactory)
+      {
+      }
+   }
+   
 }
 ```

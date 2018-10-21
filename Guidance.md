@@ -169,7 +169,7 @@ public async Task<int> DoSomethingAsync()
 
 `TaskCompletionSource<T>` is an important building block for libraries trying to adapt things that are not inherently awaitable to be awaitable via a `Task`. It is also commonly used to build higher level operations (such as batching and other combinatiors) on top of existing asynchronous APIs. By default, `Task` continuations will run *inline* on the same thread that calls Try/Set(Result/Exception/Canceled). As a library author, this means having to understand that calling code can resume directly on your thread. This is extremely dangerous and can result in deadlocks, thread pool starvation, corruption of state (if code runs unexpectedly) and more. 
 
-Always use `TaskCreationOptions.RunContinuationsAsynchronously` when creating the `TaskCompletionSource<T>`.
+Always use `TaskCreationOptions.RunContinuationsAsynchronously` when creating the `TaskCompletionSource<T>`. This will dispatch the continuation onto the thread pool instead of executing it inline.
 
 ❌ **BAD** This example does not use TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
 

@@ -468,6 +468,35 @@ app.Run(async context =>
 });
 ```
 
+## Prefer async/await over directly returning Task
+
+There are benefits to using the async/await keyword instead of directly returning the Task:
+- Asynchronous and synchronous exceptions are normalized to always be asynchronous.
+- The code is easier to modify (consider adding a using for example).
+- The compiler generated code is constantly being improved.
+- The performance of async/await is constantly being improved.
+- Diagnostics of asynchronous methods are easier (debugging hangs etc).
+
+❌ **BAD** This example directly returns the `Task` to the caller.
+
+```C#
+public Task Get()
+{
+   return Task.Delay(1000);
+}
+```
+
+✔️**GOOD** This examples uses async/await instead of directly returning the Task.
+
+```C#
+public async Task Get()
+{
+   await Task.Delay(1000);
+}
+```
+
+:warning: **NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
+
 # Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.

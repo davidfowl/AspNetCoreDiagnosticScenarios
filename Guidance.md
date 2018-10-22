@@ -434,6 +434,40 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
+## Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose. Dispose will synchronously write/flush when data is buffered.
+
+When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush which results in blocking the thread and could lead to thread pool starvation.
+
+:warning: **NOTE: This is only problematic if the underlying subsystem does IO.**
+
+❌ **BAD** This example ends up blocking the request by writing synchronously to the http response body.
+
+```C#
+app.Run(async context =>
+{
+    // The implicit Dispose call will synchronously write to the response body
+    using (var streamWriter = new StreamWriter(context.Response.Body))
+    {
+        streamWriter.WriteAsync("Hello World");
+    }
+});
+```
+
+✔️**GOOD** This example asynchronously flushes any buffered data before disposing the `StreamWriter`.
+
+```C#
+app.Run(async context =>
+{
+    using (var streamWriter = new StreamWriter(context.Response.Body))
+    {
+        streamWriter.WriteAsync("Hello World");
+        
+        // Force an asynchronous flush
+        await streamWriter.FlushAsync();
+    }
+});
+```
+
 # Scenarios
 
 The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section will try to take concrete examples from real applications and distill them into something simple to understand to help you relate these problems to existing code bases.

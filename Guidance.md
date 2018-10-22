@@ -748,3 +748,36 @@ public class Service : IService
     }
 }
 ```
+
+## WindowsIdentity.RunImpersonated
+
+This API runs the specified action as the impersonated Windows identity. Unfortunately there's no asynchronous version of the callback.
+
+❌ **BAD** This example tries to execute the query asynchronously but then wait for it outside of the call to RunImpersonated. This will throw
+because the query might be executing outside of the impersonation context.
+
+```C#
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync()
+{
+    Task<IEnumerable<Product>> products = null;
+    WindowsIdentity.RunImpersonated(context =>
+    {
+        products = _db.QueryAsync("SELECT Name from Products");
+    }};
+    return await products;
+}
+```
+
+❌ **BAD** This example uses Task.Result to get the connection in the constructor. This could lead to thread pool starvation and dead locks.
+
+```C#
+public IEnumerable<Product> GetDataImpersonatedAsync()
+{
+    return WindowsIdentity.RunImpersonated(context =>
+    {
+         return _db.QueryAsync("SELECT Name from Products").Result;
+    });
+}
+```
+
+:warning: **NOTE There's good no alternative here. This API shouldn't be used with an asynchronous callback.**

@@ -12,12 +12,12 @@ web services. As a result, there's been lots of confusion on the best practices 
 
 ## Asynchrony is viral 
 
-Once you go async, all of your callers **MUST** be async, there's no good way gradually migrate callers to be async. It's all or nothing.
+Once you go async, all of your callers **SHOULD** be async, since efforts to be async amount to nothing unless the entire callstack is async. In some cases, being partially async can be worse than being entirely synchronous. Therefore it is best to go all in, and make everything async at once. 
 
 ❌ **BAD** This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 
 ```C#
-public async int DoSomethingAsync()
+public int DoSomethingAsync()
 {
     var result = CallDependencyAsync().Result
     return result + 1;
@@ -33,6 +33,10 @@ public async Task<int> DoSomethingAsync()
     return result + 1;
 }
 ```
+
+:bulb: The [VSTHRD002](https://github.com/Microsoft/vs-threading/blob/master/doc/analyzers/VSTHRD002.md) analyzer calls out synchronous blocking anti-patterns such as the above and offers a code fix to make the entire caller tree async automatically.
+
+:bulb: The [VSTHRD103](https://github.com/Microsoft/vs-threading/blob/master/doc/analyzers/VSTHRD103.md) analyzer calls out where an async method calls synchronous methods where an async alternative exists.
 
 ## Async void
 

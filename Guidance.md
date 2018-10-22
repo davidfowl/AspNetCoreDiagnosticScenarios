@@ -473,8 +473,6 @@ app.Run(async context =>
 There are benefits to using the async/await keyword instead of directly returning the Task:
 - Asynchronous and synchronous exceptions are normalized to always be asynchronous.
 - The code is easier to modify (consider adding a using for example).
-- The compiler generated code is constantly being improved.
-- The performance of async/await is constantly being improved.
 - Diagnostics of asynchronous methods are easier (debugging hangs etc).
 
 ❌ **BAD** This example directly returns the `Task` to the caller.

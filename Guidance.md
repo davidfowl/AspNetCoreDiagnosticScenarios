@@ -388,6 +388,8 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 }
 ```
 
+:bulb: Use [the `WithCancellation` extension method](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.threading.threadingtools.withcancellation?view=visualstudiosdk-2017) defined in the Microsoft.VisualStudio.Threading library to more easily await any Task, adding an early-out cancellation mechanism.
+
 ### Using a timeout
 
 ❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers that can flood the timer queue. 

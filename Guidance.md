@@ -480,18 +480,18 @@ There are benefits to using the async/await keyword instead of directly returnin
 ❌ **BAD** This example directly returns the `Task` to the caller.
 
 ```C#
-public Task Get()
+public Task<int> DoSomethingAsync()
 {
-   return Task.Delay(1000);
+    return CallDependencyAsync();
 }
 ```
 
 ✔️**GOOD** This examples uses async/await instead of directly returning the Task.
 
 ```C#
-public async Task Get()
+public async Task<int> DoSomethingAsync()
 {
-   await Task.Delay(1000);
+    return await CallDependencyAsync();
 }
 ```
 

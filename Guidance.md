@@ -338,8 +338,8 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 
 ## Cancelling uncancellable operations
 
-One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means firing off another task
-with a timeout or `CancellationToken` and using `Task.WhenAny` to detect proper completion or cancellation.
+One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means creating another task
+that completes when a timeout or `CancellationToken` fires, and then using `Task.WhenAny` to detect a complete or cancelled operation.
 
 ### Using CancellationTokens
 

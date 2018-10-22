@@ -474,6 +474,7 @@ There are benefits to using the async/await keyword instead of directly returnin
 - Asynchronous and synchronous exceptions are normalized to always be asynchronous.
 - The code is easier to modify (consider adding a using for example).
 - Diagnostics of asynchronous methods are easier (debugging hangs etc).
+- Exceptions thrown will be automatically wrapped in the returned Task instead of surprising the caller with an actual exception.
 
 ❌ **BAD** This example directly returns the `Task` to the caller.
 

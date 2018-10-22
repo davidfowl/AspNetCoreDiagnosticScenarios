@@ -80,6 +80,11 @@ public class MyController : Controller
 
 :bulb: The [VSTHRD100](https://github.com/Microsoft/vs-threading/blob/master/doc/analyzers/VSTHRD100.md) analyzer will call out use of `async void` and offer a code fix to correct them.
 
+:bulb: The [VSTHRD101](https://github.com/Microsoft/vs-threading/blob/master/doc/analyzers/VSTHRD101.md)
+analyzer will find much harder to detect cases where an async delegate is supplied to a method
+that only accepts `Action`. The C# compiler will allow this by implicitly generating an `async void` method.
+This analyzer will prevent this from going unnoticed.
+
 ## Avoid using Task.Run for long running work that blocks the thread
 
 `Task.Run` will queue a work item to thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some rasonable timeframe). Stealing a thread pool thread for long running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.

@@ -122,7 +122,7 @@ public class QueueProcessor
     {
         var thread = new Thread(ProcessQueue) 
         {
-            // This is important as it allows the process to exit without
+            // This is important as it allows the process to exit while this thread is running
             IsBackground = true
         };
         thread.Start();

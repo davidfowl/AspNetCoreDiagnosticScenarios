@@ -17,7 +17,7 @@ Once you go async, all of your callers **SHOULD** be async, since efforts to be 
 ❌ **BAD** This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 
 ```C#
-public async int DoSomethingAsync()
+public int DoSomethingAsync()
 {
     var result = CallDependencyAsync().Result
     return result + 1;

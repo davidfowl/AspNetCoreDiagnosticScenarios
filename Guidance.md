@@ -66,7 +66,7 @@ public class MyController : Controller
     [HttpPost("/start")]
     public IActionResult Post()
     {
-        Task.Run(BackgroundOperationAsync);
+        BackgroundOperationAsync();
         return Accepted();
     }
     
@@ -77,6 +77,8 @@ public class MyController : Controller
     }
 }
 ```
+
+:bulb: The [VSTHRD100](https://github.com/Microsoft/vs-threading/blob/master/doc/analyzers/VSTHRD100.md) analyzer will call out use of `async void` and offer a code fix to correct them.
 
 ## Avoid using Task.Run for long running work that blocks the thread
 

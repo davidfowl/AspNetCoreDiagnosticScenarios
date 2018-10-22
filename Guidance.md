@@ -36,7 +36,7 @@ public async Task<int> DoSomethingAsync()
 
 ## Async void
 
-Use of async void in ASP.NET Core applications is *ALWAYS* bad. Avoid it, never do it. Typically, it's used when developers are trying to implement fire and forget patterns triggered by a controller action. Async void methods will crash the process if an exception is thrown. We'll look at more of the patterns that cause developers to do this in ASP.NET Core applications but here's a simple example:
+Use of async void in ASP.NET Core applications is **ALWAYS** bad. Avoid it, never do it. Typically, it's used when developers are trying to implement fire and forget patterns triggered by a controller action. Async void methods will crash the process if an exception is thrown. We'll look at more of the patterns that cause developers to do this in ASP.NET Core applications but here's a simple example:
 
 ❌ **BAD** Async void methods can't be tracked and therefore unhandled exceptions can result in application crashes.
 

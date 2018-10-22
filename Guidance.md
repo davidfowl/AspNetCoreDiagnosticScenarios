@@ -726,3 +726,22 @@ public class Service : IService
     }
 }
 ```
+
+✔️**GOOD** This implementation uses a static factory pattern in order to allow asynchronous construction:
+
+```C#
+public class Service : IService
+{
+    private readonly IRemoteConnection _connection;
+
+    private Service(IRemoteConnection connection)
+    {
+        _connection = connection;
+    }
+
+    public static async Task<Service> CreateAsync(IRemoteConnectionFactory connectionFactory)
+    {
+        return new Service(await connectionFactory.ConnectAsync());
+    }
+}
+```

@@ -12,7 +12,7 @@ web services. As a result, there's been lots of confusion on the best practices 
 
 ## Asynchrony is viral 
 
-Once you go async, all of your callers **MUST** be async, there's no good way gradually migrate callers to be async. It's all or nothing.
+Once you go async, all of your callers **SHOULD** be async, since efforts to be async amount to nothing unless the entire callstack is async. In many cases, being partially async can be worse than being entirely synchronous. Therefore it is best to go all in, and make everything async at once.
 
 ❌ **BAD** This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 

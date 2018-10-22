@@ -632,9 +632,36 @@ public class PersonController : Controller
 }
 ```
 
-
 ## Constructors
 
 Constructors are synchronous. If you need to initialize some logic that may be asynchronous, there are a couple patterns for dealing with this.
 
-TODO: Samples
+Here's an example of using a client API that needs to connect asynchronously before use.
+
+```C#
+public interface IRemoteConnectionFactory
+{
+   Task<IRemoteConnection> ConnectAsync();
+}
+
+public interface IRemoteConnection
+{
+    Task PublishAsync(string channel, string message);
+    Task DisposeAsync();
+}
+```
+
+
+❌ **BAD** This example uses Task.Result to get the connection in the constructor. This could lead to thread pool starvation and dead locks.
+
+```C#
+public class Service : IService
+{
+    private readonly IRemoteConnection _connection;
+    
+    public Service(IRemoteConnectionFactory connectionFactory)
+    {
+        _connection = connectionFactory.ConnectAsync().Result;
+    }
+}
+```

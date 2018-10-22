@@ -310,7 +310,7 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 }
 ```
 
-## Always flow CancellationToken(s) to APIs being called that also take a CancellationToken
+## Always flow CancellationToken(s) to APIs that take a CancellationToken
 
 Cancellation is coorperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
 

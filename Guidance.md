@@ -314,6 +314,8 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 
 Cancellation is coorperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
 
+Consider [the point of no return](https://blogs.msdn.microsoft.com/andrewarnottms/2014/03/19/recommended-patterns-for-cancellationtoken/) in an async method, after which if cancellation occurred it may leave data in a corrupted state.
+
 ❌ **BAD** This example neglects to pass the CancellationToken to `Stream.ReadAsync` making the operation effectively not cancellable.
 
 ```C#
@@ -335,6 +337,8 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
    return Encoding.UTF8.GetString(buffer, 0, read);
 }
 ```
+
+:bulb: An [analyzer proposal](https://github.com/Microsoft/vs-threading/issues/394) exists to catch such issues.
 
 ## Cancelling uncancellable operations
 

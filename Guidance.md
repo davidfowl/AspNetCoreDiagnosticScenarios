@@ -448,7 +448,7 @@ app.Run(async context =>
     // The implicit Dispose call will synchronously write to the response body
     using (var streamWriter = new StreamWriter(context.Response.Body))
     {
-        streamWriter.WriteAsync("Hello World");
+        await streamWriter.WriteAsync("Hello World");
     }
 });
 ```
@@ -460,8 +460,8 @@ app.Run(async context =>
 {
     using (var streamWriter = new StreamWriter(context.Response.Body))
     {
-        streamWriter.WriteAsync("Hello World");
-        
+        await streamWriter.WriteAsync("Hello World");
+
         // Force an asynchronous flush
         await streamWriter.FlushAsync();
     }

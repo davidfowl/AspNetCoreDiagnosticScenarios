@@ -434,7 +434,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
-## Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose. Dispose will synchronously write/flush when data is buffered.
+## Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose
 
 When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush which results in blocking the thread and could lead to thread pool starvation.
 

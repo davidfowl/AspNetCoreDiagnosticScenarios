@@ -1,5 +1,7 @@
 # ASP.NET Core Guidance
 
+ASP.NET Core is a cross-platform, high-performance, open-source framework for building modern, cloud-based, Internet-connected applications. This guide captures some of the common pitfalls and practices when writing scalable server applications.
+
 ## Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body
 
 All IO in ASP.NET Core is asynchronous. Servers implement the `Stream` interface which has both synchronous and asynchronous overloads. The asynchronous ones should be preferred to avoid blocking thread pool threads (this could lead to thread pool starvation).

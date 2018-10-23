@@ -159,7 +159,6 @@ app.Use(async (next, context) =>
     
     // This may fail if next() already wrote to the response
     context.Response.Headers["test"] = "value";    
-    await context.Response.WriteAsync("World");
 });
 ```
 
@@ -176,7 +175,6 @@ app.Use(async (next, context) =>
     if (!context.Response.HasStarted)
     {
         context.Response.Headers["test"] = "value";
-        await context.Response.WriteAsync("World");
     }
 });
 ```
@@ -194,6 +192,5 @@ app.Use(async (next, context) =>
     await next();
     
     context.Response.Headers["test"] = "value";
-    await context.Response.WriteAsync("World");
 });
 ```

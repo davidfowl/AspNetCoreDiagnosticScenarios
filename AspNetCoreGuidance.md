@@ -89,4 +89,31 @@ public class AsyncController : Controller
 
 ## Do not capture services injected into the controllers on background threads
 
+❌ **BAD**  This example shows a closure is capturing the context from the Controller action parameter. This is bad because this work item could run
+outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will crash the process.
+
+```C#
+public class FireAndForgetController : Controller
+{
+    [HttpGet("/fire-and-forget-1")]
+    public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
+    {
+        // This is an implicit async void method. ThreadPool.QueueUserWorkItem takes an Action, but the compiler allows
+        // async void delegates to be used in its place. This is dangerous because unhandled exceptions will bring down the entire server process.
+        ThreadPool.QueueUserWorkItem(async state =>
+        {
+            await Task.Delay(1000);
+
+            // This closure is capturing the context from the Controller action parameter. This is bad because this work item could run
+            // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will crash the process with
+            // and ObjectDisposedException
+            context.Pokemon.Add(new Pokemon());
+            await context.SaveChangesAsync();
+        });
+
+        return Accepted();
+    }
+}
+```
+
 ## Avoid writing to the response body after middleware pipeline executes

@@ -44,7 +44,7 @@ public class MyController : Controller
 
 ## Avoid reading the entire request body or response body into memory
 
-## The HttpContext is NOT thread safe
+## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 
 ## Do not use the HttpContext after the request is complete
 

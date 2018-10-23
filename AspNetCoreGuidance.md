@@ -143,7 +143,7 @@ public IActionResult FireAndForget3([FromServices]IServiceScopeFactory serviceSc
 }
 ```
 
-## Avoid writing to the response body the HttpResponse has started
+## Avoid adding headers after the HttpResponse has started
 
 ASP.NET Core does not buffer the http response body. This means that the very first time the response is written, the headers are sent along with that chunk of the body to the client. When this happens, it's no longer possible to change response headers.
 

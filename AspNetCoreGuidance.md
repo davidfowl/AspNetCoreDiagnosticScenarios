@@ -88,10 +88,6 @@ public class AsyncController : Controller
 }
 ```
 
-## Prefer logging scopes with data over passing the HttpContext values into loggers directly
-
-TBD
-
 ## Do not capture the HttpContext in background threads
 
 TBD

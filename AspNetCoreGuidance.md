@@ -1,6 +1,6 @@
 # ASP.NET Core Guidance
 
-## Avoid using synchronous overloads on HttpRequest.Body and HttpResponse.Body
+## Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body
 
 All IO in ASP.NET Core is asynchronous. Servers implement the `Stream` interface which has both synchronous and asynchronous overloads. The asynchronous ones should be preferred to avoid blocking thread pool threads (this could lead to thread pool starvation).
 

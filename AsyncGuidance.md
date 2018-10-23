@@ -159,41 +159,56 @@ The `SynchronizationContext` is an abstraction that gives application models a c
 
 :bulb:**NOTE: ASP.NET Core does not have a SynchronizationContext and is not prone to the deadlock problem.**
 
-❌ **BAD** The below are all examples that are trying to avoid the dead lock situation but still succumb to "sync over async" problems.
+❌ **BAD** The below are all examples that are in some cases trying to avoid the dead lock situation but still succumb to "sync over async" problems.
 
 ```C#
 public string DoOperationBlocking()
 {
+    // Bad - Blocking the thread that enters.
+    // DoAsyncOperation will be scheduled on the default task scheduler, and remove the risk of deadlocking.
+    // In the case of an exception, this method will throw an AggregateException wrapping the origion exception.
     return Task.Run(() => DoAsyncOperation()).Result;
 }
 
 public string DoOperationBlocking2()
 {
+    // Bad - Blocking the thread that enters.
+    // DoAsyncOperation will be scheduled on the default task scheduler, and remove the risk of deadlocking.
     return Task.Run(() => DoAsyncOperation()).GetAwaiter().GetResult();
 }
 
 public string DoOperationBlocking3()
 {
+    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
+    // In the case of an exception, this method will throw an AggregateException containing another AggregateException, containing the origonal exception.
     return Task.Run(() => DoAsyncOperation().Result).Result;
 }
 
 public string DoOperationBlocking4()
 {
+    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
     return Task.Run(() => DoAsyncOperation().GetAwaiter().GetResult()).GetAwaiter().GetResult();
 }
 
 public string DoOperationBlocking5()
 {
+    // Bad - Blocking the thread that enters.
+    // Bad - No effort has been made to prevent a present SynchonizationContext from becoming deadlocked.
+    // In the case of an exception, this method will throw an AggregateException wrapping the origion exception.
     return DoAsyncOperation().Result;
 }
 
 public string DoOperationBlocking6()
 {
+    // Bad - Blocking the thread that enters.
+    // Bad - No effort has been made to prevent a present SynchonizationContext from becoming deadlocked.
     return DoAsyncOperation().GetAwaiter().GetResult();
 }
 
 public string DoOperationBlocking7()
 {
+    // Bad - Blocking the thread that enters.
+    // Bad - No effort has been made to prevent a present SynchonizationContext from becoming deadlocked.
     var task = DoAsyncOperation();
     task.Wait();
     return task.GetAwaiter().GetResult();

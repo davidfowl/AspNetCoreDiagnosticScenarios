@@ -50,6 +50,22 @@ public class MyController : Controller
 
 ## Do not use the HttpContext after the request is complete
 
+❌ **BAD** This example uses async void (which is a **ALWAYS** bad in ASP.NET Core applications) and as a result, accesses the `HttpResponse` after the http request is complete.
+
+```C#
+public class AsyncVoidController : Controller
+{
+    [HttpGet("/async-void-1")]
+    public async void Get()
+    {
+        await Task.Delay(1000);
+
+        // THIS will crash the process since we're writing after the response has completed on a background thread
+        await Response.WriteAsync("Hello World");
+    }
+}
+```
+
 ## Prefer logging scopes with data over passing the HttpContext values into loggers directly
 
 ## Do not capture the HttpContext in background threads

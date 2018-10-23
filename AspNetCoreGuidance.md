@@ -29,10 +29,10 @@ public class MyController : Controller
 public class MyController : Controller
 {
     [HttpGet("/pokemon")]
-    public ActionResult<PokemonData> Get()
+    public async Task<ActionResult<PokemonData>> Get()
     {
         // This synchronously reads the entire http request body into memory.
-        var json = new StreamReader(Request.Body).ReadToEndAsync();
+        var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
         return JsonConvert.DeserializeObject<PokemonData>(json);
     }

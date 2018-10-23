@@ -158,6 +158,7 @@ app.Use(async (next, context) =>
     await next();
     
     // This may fail if next() already wrote to the response
+    context.Response.Headers["test"] = "value";    
     await context.Response.WriteAsync("World");
 });
 ```
@@ -171,10 +172,10 @@ app.Use(async (next, context) =>
     
     await next();
     
-    // Check if the response has already started before writing
+    // Check if the response has already started before adding header and writing
     if (!context.Response.HasStarted)
     {
-        // This may fail if next() already wrote to the response
+        context.Response.Headers["test"] = "value";
         await context.Response.WriteAsync("World");
     }
 });
@@ -192,6 +193,7 @@ app.Use(async (next, context) =>
     
     await next();
     
+    context.Response.Headers["test"] = "value";
     await context.Response.WriteAsync("World");
 });
 ```

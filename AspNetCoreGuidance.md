@@ -89,7 +89,7 @@ public class AsyncController : Controller
 
 ## Do not capture services injected into the controllers on background threads
 
-❌ **BAD**  This example shows a closure is capturing the context from the Controller action parameter. This is bad because this work item could run
+❌ **BAD** This example shows a closure is capturing the context from the Controller action parameter. This is bad because this work item could run
 outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will crash the process.
 
 ```C#
@@ -144,4 +144,54 @@ public IActionResult FireAndForget3([FromServices]IServiceScopeFactory serviceSc
 }
 ```
 
-## Avoid writing to the response body after middleware pipeline executes
+## Avoid writing to the response body the HttpResponse has started
+
+ASP.NET Core does not buffer the http response body. This means that the very first time the response is written, the headers are sent along with that chunk of the body to the client. When this happens, it's no longer possible to change response headers.
+
+❌ **BAD** This logic tries to write to the 
+
+```C#
+app.Use(async (next, context) =>
+{
+    await context.Response.WriteAsync("Hello ");
+    
+    await next();
+    
+    // This may fail if next() already wrote to the response
+    await context.Response.WriteAsync("World");
+});
+```
+
+✔️**GOOD** This example checks if the http response has started before writing to the body.
+
+```C#
+app.Use(async (next, context) =>
+{
+    await context.Response.WriteAsync("Hello ");
+    
+    await next();
+    
+    // Check if the response has already started before writing
+    if (!context.Response.HasStarted)
+    {
+        // This may fail if next() already wrote to the response
+        await context.Response.WriteAsync("World");
+    }
+});
+```
+
+✔️**GOOD** This examples uses the [Microsoft.AspNetCore.Buffering](https://www.nuget.org/packages/Microsoft.AspNetCore.Buffering) middleware to buffer the response body.
+
+```C#
+// This will cause the response body to buffered
+app.UseResponseBuffering();
+
+app.Use(async (next, context) =>
+{
+    await context.Response.WriteAsync("Hello ");
+    
+    await next();
+    
+    await context.Response.WriteAsync("World");
+});
+```

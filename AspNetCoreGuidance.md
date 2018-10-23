@@ -116,4 +116,32 @@ public class FireAndForgetController : Controller
 }
 ```
 
+✔️**GOOD** This example injects an `IServiceScopeFactory` and creates a new dependency injection scope in the background thread and does not reference
+anything from the controller itself. It also uses `Task.Run` which will not crash the process if an exception occurs on the background thread.
+
+```C#
+[HttpGet("/fire-and-forget-3")]
+public IActionResult FireAndForget3([FromServices]IServiceScopeFactory serviceScopeFactory)
+{
+    // This version of fire and forget adds some exception handling. We're also no longer capturing the PokemonDbContext from the incoming request.
+    // Instead, we're injecting an IServiceScopeFactory (which is a singleton) in order to create a scope in the background work item.
+    _ = Task.Run(async () =>
+    {
+        await Task.Delay(1000);
+
+        // Create a scope for the lifetime of the background operation and resolve services from it
+        using (var scope = serviceScopeFactory.CreateScope())
+        {
+            // This will a PokemonDbContext from the correct scope and the operation will succeed
+            var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
+
+            context.Pokemon.Add(new Pokemon());
+            await context.SaveChangesAsync();
+        }
+    });
+
+    return Accepted();
+}
+```
+
 ## Avoid writing to the response body after middleware pipeline executes

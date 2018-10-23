@@ -43,9 +43,15 @@ public class MyController : Controller
 
 ## Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing
 
+TBD
+
 ## Avoid reading the entire request body or response body into memory
 
+TBD
+
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
+
+TBD
 
 ## Do not use the HttpContext after the request is complete
 

@@ -157,6 +157,8 @@ The result is that we need to use 2 threads instead of 1 to complete synchronous
 
 The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has lead to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's is no good way to block waiting for a Task to complete.
 
+:warning: **NOTE: ASP.NET Core does not have a SynchronizationContext and is not prone to the deadlock problem.**
+
 ❌ **BAD** The below are all examples that are trying to avoid the dead lock situation but still succumb to "sync over async" problems.
 
 ```C#

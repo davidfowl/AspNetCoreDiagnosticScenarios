@@ -37,7 +37,7 @@ public class MyController : Controller
 }
 ```
 
-:warning: **NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See **
+:warning: **NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See [this](#avoid-reading-the-entire-request-body-or-response-body-into-memory) for more information.**
 
 
 ## Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing

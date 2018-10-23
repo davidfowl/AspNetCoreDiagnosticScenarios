@@ -157,7 +157,7 @@ The result is that we need to use 2 threads instead of 1 to complete synchronous
 
 The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has lead to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's is no good way to block waiting for a Task to complete.
 
-:warning: **NOTE: ASP.NET Core does not have a SynchronizationContext and is not prone to the deadlock problem.**
+:bulb: **NOTE: ASP.NET Core does not have a SynchronizationContext and is not prone to the deadlock problem.**
 
 ❌ **BAD** The below are all examples that are trying to avoid the dead lock situation but still succumb to "sync over async" problems.
 
@@ -269,7 +269,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-:warning: **NOTE: There are 2 enums that look alike. [TaskCreationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [TaskContinuationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
+:bulb: **NOTE: There are 2 enums that look alike. [TaskCreationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [TaskContinuationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
 
 ## Always dispose CancellationTokenSource(s) used for timeouts
 
@@ -436,7 +436,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 
 When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush which results in blocking the thread and could lead to thread pool starvation.
 
-:warning: **NOTE: This is only problematic if the underlying subsystem does IO.**
+:bulb: **NOTE: This is only problematic if the underlying subsystem does IO.**
 
 ❌ **BAD** This example ends up blocking the request by writing synchronously to the http response body.
 
@@ -492,7 +492,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-:warning: **NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
+:bulb: **NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
 
 # Scenarios
 
@@ -776,4 +776,4 @@ public IEnumerable<Product> GetDataImpersonatedAsync()
 }
 ```
 
-:warning: **NOTE There's good no alternative here. This API shouldn't be used with an asynchronous callback.**
+:bulb: **NOTE There's good no alternative here. This API shouldn't be used with an asynchronous callback.**

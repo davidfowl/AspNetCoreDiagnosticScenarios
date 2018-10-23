@@ -23,7 +23,7 @@ public class MyController : Controller
 }
 ```
 
-✔️**GOOD** This example uses `StreamReader.ReadToEndAsync` 
+✔️**GOOD** This example uses `StreamReader.ReadToEndAsync` and as a result, does not block the thread while reading.
 
 ```C#
 public class MyController : Controller
@@ -50,17 +50,32 @@ public class MyController : Controller
 
 ## Do not use the HttpContext after the request is complete
 
-❌ **BAD** This example uses async void (which is a **ALWAYS** bad in ASP.NET Core applications) and as a result, accesses the `HttpResponse` after the http request is complete.
+❌ **BAD** This example uses async void (which is a **ALWAYS** bad in ASP.NET Core applications) and as a result, accesses the `HttpResponse` after the http request is complete. It will crash the process as a result.
 
 ```C#
 public class AsyncVoidController : Controller
 {
-    [HttpGet("/async-void-1")]
+    [HttpGet("/async")]
     public async void Get()
     {
         await Task.Delay(1000);
 
         // THIS will crash the process since we're writing after the response has completed on a background thread
+        await Response.WriteAsync("Hello World");
+    }
+}
+```
+
+✔️**GOOD** This example returns a `Task` to the framework so the http request doesn't complete until the entire action completes.
+
+```C#
+public class AsyncController : Controller
+{
+    [HttpGet("/async")]
+    public async Task Get()
+    {
+        await Task.Delay(1000);
+        
         await Response.WriteAsync("Hello World");
     }
 }

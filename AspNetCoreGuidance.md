@@ -54,4 +54,4 @@ public class MyController : Controller
 
 ## Do not capture services injected into the controllers on background threads
 
-## Avoding writing to the response body after middleware pipeline executes
+## Avoid writing to the response body after middleware pipeline executes

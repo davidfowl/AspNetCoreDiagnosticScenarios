@@ -654,7 +654,7 @@ public class PersonController : Controller
 }
 ```
 
-❌ **BAD** This won't result in thread pool starvation but will potentially run the cache callback multiple times in parallel.
+✔️**GOOD** :warning: This implementation won't result in thread pool starvation but will potentially run the cache callback multiple times in parallel.
 
 ```C#
 public class PersonController : Controller

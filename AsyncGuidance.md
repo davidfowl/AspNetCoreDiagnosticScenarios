@@ -223,7 +223,7 @@ methods are still valid to use, we generally recommend that you prefer async/awa
 ❌ **BAD** The example uses ContinueWith instead of async
 
 ```C#
-public async Task<int> DoSomethingAsync()
+public Task<int> DoSomethingAsync()
 {
     return CallDependencyAsync().ContinueWith(task =>
     {
@@ -251,7 +251,7 @@ Always use `TaskCreationOptions.RunContinuationsAsynchronously` when creating th
 ❌ **BAD** This example does not use TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
 
 ```C#
-public async Task<int> DoSomethingAsync()
+public Task<int> DoSomethingAsync()
 {
     var tcs = new TaskCompletionSource<int>();
     
@@ -269,7 +269,7 @@ public async Task<int> DoSomethingAsync()
 ✔️**GOOD** This example uses TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
 
 ```C#
-public async Task<int> DoSomethingAsync()
+public Task<int> DoSomethingAsync()
 {
     var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
     

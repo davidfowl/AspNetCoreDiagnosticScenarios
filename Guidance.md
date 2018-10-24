@@ -5,3 +5,4 @@ web services. The examples shown here are based on experiences with customer app
 
 - [General ASP.NET Core](AspNetCoreGuidance.md)
 - [Asynchronous Programming](AsyncGuidance.md)
+- [API Usage Gotchas](Gotchas.md)

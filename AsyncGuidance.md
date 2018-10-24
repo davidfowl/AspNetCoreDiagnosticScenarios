@@ -654,7 +654,10 @@ public class PersonController : Controller
 }
 ```
 
-✔️**GOOD** :warning: This implementation won't result in thread pool starvation but will potentially run the cache callback multiple times in parallel.
+✔️**GOOD** This implementation won't result in thread pool starvation since we're storing a task instead of the result itself.
+
+:warning: ConcurrentDictionary.GetOrAdd will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations
+multiple times.
 
 ```C#
 public class PersonController : Controller

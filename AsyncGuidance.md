@@ -74,7 +74,8 @@ public class MyController : Controller
 
 ## Avoid using Task.Run for long running work that blocks the thread
 
-`Task.Run` will queue a work item to thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread pool thread for long running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
+Long running work in this context refers to a thread that's running for the lifetime of the application doing background work (like processing queue items, or sleeping and waking up to process some data). `Task.Run` will queue a work item to thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread pool thread for long running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
+
 
 ❌ **BAD** This example steals a thread pool thread forever, to execute queued work on a `BlockingCollection<T>`.
 

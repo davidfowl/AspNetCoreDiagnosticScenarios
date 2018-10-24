@@ -47,7 +47,7 @@ public class MyController : Controller
     public async void BackgroundOperationAsync()
     {
         var result = await CallDependencyAsync();
-        return result + 1;
+        DoSomething(result);
     }
 }
 ```
@@ -67,7 +67,7 @@ public class MyController : Controller
     public async Task BackgroundOperationAsync()
     {
         var result = await CallDependencyAsync();
-        return result + 1;
+        DoSomething(result);
     }
 }
 ```

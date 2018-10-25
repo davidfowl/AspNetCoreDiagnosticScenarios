@@ -1,3 +1,20 @@
+# Table of contents
+ - [Asynchrony is viral](asynchrony-is-viral)
+ - [Async void]()
+ - [Avoid using Task.Run for long running work that blocks the thread]()
+ - [Avoid using Task.Result and Task.Wait]()
+ - [Prefer await over ContinueWith]()
+ - [Always create TaskCompletionSource\<T\> with TaskCreationOptions.RunContinuationsAsynchronously]()
+ - [Always dispose CancellationTokenSource(s) used for timeouts]()
+ - [Cancelling uncancellable operations]()
+ - [Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose]()
+ - [Prefer async/await over directly returning Task]()
+ - [Timer callbacks]()
+ - [Implicit async void delegates]()
+ - [ConcurrentDictionary.GetOrAdd]()
+ - [Constructors]()
+ - [WindowsIdentity.RunImpersonated]()
+ 
 # Asynchronous Programming
 
 Asynchronous programming has been around for several years on the .NET platform but has historically been very difficult to do well. Since the introduction of async/await

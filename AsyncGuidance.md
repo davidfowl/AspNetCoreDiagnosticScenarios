@@ -2,6 +2,7 @@
  - [Asynchronous Programming](#asynchronous-programming)
    - [Asynchrony is viral](#asynchrony-is-viral)
    - [Async void](#async-void)
+   - [Prefer Task.FromResult over Task.Run for already computed data]()
    - [Avoid using Task.Run for long running work that blocks the thread](#avoid-using-taskrun-for-long-running-work-that-blocks-the-thread)
    - [Avoid using Task.Result and Task.Wait](#avoid-using-taskresult-and-taskwait)
    - [Prefer await over ContinueWith](#prefer-await-over-continuewith)
@@ -89,6 +90,48 @@ public class MyController : Controller
         var result = await CallDependencyAsync();
         DoSomething(result);
     }
+}
+```
+
+## Prefer Task.FromResult over Task.Run for already computed data
+
+For pre-computed results, there's no need to call `Task.Run`, that will end up queuing a work item to the thread pool that will immediately complete with the pre-computed value. Instead, use `Task.FromResult`, to create a task wrapping already computed data.
+
+❌ **BAD** This example wastes a thread pool thread to return a trivially computed value.
+
+```C#
+public class MyLibrary
+{
+   public Task<int> AddAsync(int a, int b)
+   {
+       return Task.Run(() => a + b);
+   }
+}
+```
+
+✔️**GOOD** This example uses `Task.FromResult` to return the trivially computed value. It does not use any extra threads as a result.
+
+```C#
+public class MyLibrary
+{
+   public Task<int> AddAsync(int a, int b)
+   {
+       return Task.FromResult(a + b);
+   }
+}
+```
+
+:bulb:**NOTE: Using Task.FromResult will result in a Task allocation. Using ValueTask\<T\> can completely remove that allocation.**
+
+✔️**GOOD** This example uses a `ValueTask<int>` to return the trivially computed value. It does not use any extra threads as a result. It also does not allocate an object on the managed heap.
+
+```C#
+public class MyLibrary
+{
+   public Value<int> AddAsync(int a, int b)
+   {
+       return new ValueTask<int>(a + b);
+   }
 }
 ```
 

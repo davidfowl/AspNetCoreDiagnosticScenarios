@@ -2,7 +2,7 @@
  - [Asynchronous Programming](#asynchronous-programming)
    - [Asynchrony is viral](#asynchrony-is-viral)
    - [Async void](#async-void)
-   - [Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data](#prefer-taskfromresult-over-taskrun-for-already-computed-data)
+   - [Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data](#prefer-taskfromresult-over-taskrun-for-pre-computed-or-trivially-computed-data)
    - [Avoid using Task.Run for long running work that blocks the thread](#avoid-using-taskrun-for-long-running-work-that-blocks-the-thread)
    - [Avoid using Task.Result and Task.Wait](#avoid-using-taskresult-and-taskwait)
    - [Prefer await over ContinueWith](#prefer-await-over-continuewith)

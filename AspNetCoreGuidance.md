@@ -199,3 +199,21 @@ app.Use(async (next, context) =>
     context.Response.Headers["test"] = "value";
 });
 ```
+
+✔️**GOOD** This examples uses `Response.OnStarting`. 
+
+It allows you to register a callback.It will be invoked when the response starts being written. It gives you the capability to append or override headers just in time, without requiring knowledge of the next middlewares.
+```C#
+app.Use(async (next, context) =>
+{
+    context.Response.OnStarting(() => 
+    {
+       
+            context.Response.Headers["someheader"] = "somevalue"; 
+            return Task.CompletedTask;
+        });
+    }
+
+    await next();
+});
+```

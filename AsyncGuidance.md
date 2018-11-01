@@ -234,7 +234,7 @@ public string DoOperationBlocking()
 {
     // Bad - Blocking the thread that enters.
     // DoAsyncOperation will be scheduled on the default task scheduler, and remove the risk of deadlocking.
-    // In the case of an exception, this method will throw an AggregateException wrapping the origion exception.
+    // In the case of an exception, this method will throw an AggregateException wrapping the original exception.
     return Task.Run(() => DoAsyncOperation()).Result;
 }
 
@@ -262,7 +262,7 @@ public string DoOperationBlocking5()
 {
     // Bad - Blocking the thread that enters.
     // Bad - No effort has been made to prevent a present SynchonizationContext from becoming deadlocked.
-    // In the case of an exception, this method will throw an AggregateException wrapping the origion exception.
+    // In the case of an exception, this method will throw an AggregateException wrapping the original exception.
     return DoAsyncOperation().Result;
 }
 

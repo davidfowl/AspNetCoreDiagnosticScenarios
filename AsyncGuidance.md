@@ -128,7 +128,7 @@ public class MyLibrary
 ```C#
 public class MyLibrary
 {
-   public Value<int> AddAsync(int a, int b)
+   public ValueTask<int> AddAsync(int a, int b)
    {
        return new ValueTask<int>(a + b);
    }

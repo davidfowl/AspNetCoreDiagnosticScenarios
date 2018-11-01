@@ -23,7 +23,7 @@ public class MyController : Controller
 }
 ```
 
-✔️**GOOD** This example uses `StreamReader.ReadToEndAsync` and as a result, does not block the thread while reading.
+:white_check_mark: **GOOD** This example uses `StreamReader.ReadToEndAsync` and as a result, does not block the thread while reading.
 
 ```C#
 public class MyController : Controller
@@ -77,7 +77,7 @@ public class AsyncVoidController : Controller
 }
 ```
 
-✔️**GOOD** This example returns a `Task` to the framework so the http request doesn't complete until the entire action completes.
+:white_check_mark: **GOOD** This example returns a `Task` to the framework so the http request doesn't complete until the entire action completes.
 
 ```C#
 public class AsyncController : Controller
@@ -125,7 +125,7 @@ public class FireAndForgetController : Controller
 }
 ```
 
-✔️**GOOD** This example injects an `IServiceScopeFactory` and creates a new dependency injection scope in the background thread and does not reference
+:white_check_mark: **GOOD** This example injects an `IServiceScopeFactory` and creates a new dependency injection scope in the background thread and does not reference
 anything from the controller itself. It also uses `Task.Run` which will not crash the process if an exception occurs on the background thread.
 
 ```C#
@@ -171,7 +171,7 @@ app.Use(async (next, context) =>
 });
 ```
 
-✔️**GOOD** This example checks if the http response has started before writing to the body.
+:white_check_mark: **GOOD** This example checks if the http response has started before writing to the body.
 
 ```C#
 app.Use(async (next, context) =>
@@ -188,7 +188,7 @@ app.Use(async (next, context) =>
 });
 ```
 
-✔️**GOOD** This examples uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
+:white_check_mark: **GOOD** This examples uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
 
 It allows you to register a callback that will be invoked just before response headers are written to the client. It gives you the ability to append or override headers just in time, without requiring knowledge of the next middleware in the pipeline.
 

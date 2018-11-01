@@ -184,36 +184,19 @@ app.Use(async (next, context) =>
 });
 ```
 
-✔️**GOOD** This examples uses the [Microsoft.AspNetCore.Buffering](https://www.nuget.org/packages/Microsoft.AspNetCore.Buffering) middleware to buffer the response body.
+✔️**GOOD** This examples uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
 
-```C#
-// This will cause the response body to buffered
-app.UseResponseBuffering();
+It allows you to register a callback that will be invoked just before response headers are written to the client. It gives you the ability to append or override headers just in time, without requiring knowledge of the next middleware in the pipeline.
 
-app.Use(async (next, context) =>
-{
-    await context.Response.WriteAsync("Hello ");
-    
-    await next();
-    
-    context.Response.Headers["test"] = "value";
-});
-```
-
-✔️**GOOD** This examples uses `Response.OnStarting`. 
-
-It allows you to register a callback.It will be invoked when the response starts being written. It gives you the capability to append or override headers just in time, without requiring knowledge of the next middlewares.
 ```C#
 app.Use(async (next, context) =>
 {
     context.Response.OnStarting(() => 
-    {
-       
-            context.Response.Headers["someheader"] = "somevalue"; 
-            return Task.CompletedTask;
-        });
-    }
-
+    {       
+        context.Response.Headers["someheader"] = "somevalue"; 
+        return Task.CompletedTask;
+    });
+    
     await next();
 });
 ```

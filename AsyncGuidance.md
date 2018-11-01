@@ -73,7 +73,7 @@ public class MyController : Controller
 }
 ```
 
-:white_check_mark:**GOOD** Task returning methods are better since unhandled exceptions trigger the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
+:white_check_mark: **GOOD** Task returning methods are better since unhandled exceptions trigger the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
 
 ```C#
 public class MyController : Controller
@@ -109,7 +109,7 @@ public class MyLibrary
 }
 ```
 
-:white_check_mark:**GOOD** This example uses `Task.FromResult` to return the trivially computed value. It does not use any extra threads as a result.
+:white_check_mark: **GOOD** This example uses `Task.FromResult` to return the trivially computed value. It does not use any extra threads as a result.
 
 ```C#
 public class MyLibrary
@@ -123,7 +123,7 @@ public class MyLibrary
 
 :bulb:**NOTE: Using Task.FromResult will result in a Task allocation. Using ValueTask\<T\> can completely remove that allocation.**
 
-:white_check_mark:**GOOD** This example uses a `ValueTask<int>` to return the trivially computed value. It does not use any extra threads as a result. It also does not allocate an object on the managed heap.
+:white_check_mark: **GOOD** This example uses a `ValueTask<int>` to return the trivially computed value. It does not use any extra threads as a result. It also does not allocate an object on the managed heap.
 
 ```C#
 public class MyLibrary
@@ -173,7 +173,7 @@ public class QueueProcessor
 }
 ```
 
-:white_check_mark:**GOOD** This example uses a dedicated thread to process the message queue instead of a thread pool thread.
+:white_check_mark: **GOOD** This example uses a dedicated thread to process the message queue instead of a thread pool thread.
 
 ```C#
 public class QueueProcessor
@@ -300,7 +300,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark:**GOOD** This example uses the await keyword to get the result from `CallDependencyAsync`.
+:white_check_mark: **GOOD** This example uses the await keyword to get the result from `CallDependencyAsync`.
 
 ```C#
 public async Task<int> DoSomethingAsync()
@@ -334,7 +334,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark:**GOOD** This example uses TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
+:white_check_mark: **GOOD** This example uses TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
 
 ```C#
 public Task<int> DoSomethingAsync()
@@ -373,7 +373,7 @@ public async Task<Stream> HttpClientAsyncWithCancellationBad()
 }
 ```
 
-:white_check_mark:**GOOD** This example disposes the `CancellationTokenSource` and properly removes the timer from the queue.
+:white_check_mark: **GOOD** This example disposes the `CancellationTokenSource` and properly removes the timer from the queue.
 
 ```C#
 public async Task<Stream> HttpClientAsyncWithCancellationGood()
@@ -405,7 +405,7 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 }
 ```
 
-:white_check_mark:**GOOD** This example passes the CancellationToken into `Stream.ReadAsync`.
+:white_check_mark: **GOOD** This example passes the CancellationToken into `Stream.ReadAsync`.
 
 ```C#
 public async Task<string> DoAsyncThing(CancellationToken cancellationToken = default)
@@ -443,7 +443,7 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 }
 ```
 
-:white_check_mark:**GOOD** This example disposes the `CancellationTokenRegistration` when one of the `Task(s)` complete.
+:white_check_mark: **GOOD** This example disposes the `CancellationTokenRegistration` when one of the `Task(s)` complete.
 
 ```C#
 public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
@@ -489,7 +489,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
-:white_check_mark:**GOOD** This example cancels the timer if the operation succesfully completes.
+:white_check_mark: **GOOD** This example cancels the timer if the operation succesfully completes.
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -534,7 +534,7 @@ app.Run(async context =>
 });
 ```
 
-:white_check_mark:**GOOD** This example asynchronously flushes any buffered data before disposing the `StreamWriter`.
+:white_check_mark: **GOOD** This example asynchronously flushes any buffered data before disposing the `StreamWriter`.
 
 ```C#
 app.Run(async context =>
@@ -566,7 +566,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark:**GOOD** This examples uses async/await instead of directly returning the Task.
+:white_check_mark: **GOOD** This examples uses async/await instead of directly returning the Task.
 
 ```C#
 public async Task<int> DoSomethingAsync()
@@ -626,7 +626,7 @@ public class Pinger
 }
 ```
 
-:white_check_mark:**GOOD** This example uses an async Task based method and discards the Task in the Timer callback. If this method fails, it will not crash the process.
+:white_check_mark: **GOOD** This example uses an async Task based method and discards the Task in the Timer callback. If this method fails, it will not crash the process.
 Instead, it will fire the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
 
 ```C#
@@ -685,7 +685,7 @@ public class Program
 }
 ```
 
-:white_check_mark:**GOOD** This BackgroundQueue implementation offers both sync and async callback overloads.
+:white_check_mark: **GOOD** This BackgroundQueue implementation offers both sync and async callback overloads.
 
 ```C#
 public class BackgroundQueue
@@ -722,7 +722,7 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark:**GOOD** This implementation won't result in thread pool starvation since we're storing a task instead of the result itself.
+:white_check_mark: **GOOD** This implementation won't result in thread pool starvation since we're storing a task instead of the result itself.
 
 :warning: ConcurrentDictionary.GetOrAdd will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations
 multiple times.
@@ -748,7 +748,7 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark:**GOOD** This implementation fixes the multiple executing callback issue by using the async lazy pattern.
+:white_check_mark: **GOOD** This implementation fixes the multiple executing callback issue by using the async lazy pattern.
 
 ```C#
 public class PersonController : Controller
@@ -812,7 +812,7 @@ public class Service : IService
 }
 ```
 
-:white_check_mark:**GOOD** This implementation uses a static factory pattern in order to allow asynchronous construction:
+:white_check_mark: **GOOD** This implementation uses a static factory pattern in order to allow asynchronous construction:
 
 ```C#
 public class Service : IService

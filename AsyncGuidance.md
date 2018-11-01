@@ -862,4 +862,4 @@ public IEnumerable<Product> GetDataImpersonatedAsync()
 }
 ```
 
-:bulb:**NOTE There's good no alternative here. This API shouldn't be used with an asynchronous callback. See https://github.com/dotnet/corefx/issues/24977**
+:bulb:**NOTE There's no good alternative here. This API shouldn't be used with an asynchronous callback. See https://github.com/dotnet/corefx/issues/24977**

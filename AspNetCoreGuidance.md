@@ -191,6 +191,7 @@ It allows you to register a callback that will be invoked just before response h
 ```C#
 app.Use(async (next, context) =>
 {
+    // Wire up the callback that will fire just before the response headers are sent to the client.
     context.Response.OnStarting(() => 
     {       
         context.Response.Headers["someheader"] = "somevalue"; 

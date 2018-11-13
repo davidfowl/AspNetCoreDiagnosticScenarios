@@ -55,7 +55,88 @@ TBD
 
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 
-TBD
+The `HttpContext` is *NOT* threadsafe. Accessing it from multiple threads in parallel can cause corruption resulting in undefined behavior (hangs, crashes, data corruption).
+
+❌ **BAD** This example makes 3 parallel requests and logs the incoming request path before and after the outgoing http request. This accesses the request path from multiple threads potentially in parallel.
+
+```C#
+public class AsyncController : Controller
+{
+    [HttpGet("/search")]
+    public async Task<SearchResults> Get(string query)
+    {
+        var query1 = SearchAsync(SearchEngine.Google, query);
+        var query2 = SearchAsync(SearchEngine.Bing, query);
+        var query3 = SearchAsync(SearchEngine.DuckDuckGo, query);
+
+        await Task.WhenAll(query1, query2, query3);
+        
+        var results1 = await query1;
+        var results2 = await query2;
+        var results3 = await query3;
+
+        return SearchResults.Combine(results1, results2, results3);
+    }
+
+    private async Task<SearchResults> SearchAsync(SearchEngine engine, string query)
+    {
+        var searchResults = SearchResults.Empty;
+        try
+        {
+            _logger.LogInformation("Starting search query from {path}.", HttpContext.Request.Path);
+            searchResults = await _searchService.SearchAsync(engine, query);
+            _logger.LogInformation("Finishing search query from {path}.", HttpContext.Request.Path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed query from {path}", HttpContext.Request.Path);
+        }
+
+        return searchResults;
+    }
+}
+```
+
+:white_check_mark: **GOOD** This example copies all data from the incoming request before making the 3 parallel requests.
+
+```C#
+public class AsyncController : Controller
+{
+    [HttpGet("/search")]
+    public async Task<SearchResults> Get(string query)
+    {
+        string path = HttpContext.Request.Path;
+        var query1 = SearchAsync(SearchEngine.Google, query, path);
+        var query2 = SearchAsync(SearchEngine.Bing, query, path);
+        var query3 = SearchAsync(SearchEngine.DuckDuckGo, query, path);
+
+        await Task.WhenAll(query1, query2, query3);
+        
+        var results1 = await query1;
+        var results2 = await query2;
+        var results3 = await query3;
+
+        return SearchResults.Combine(results1, results2, results3);
+    }
+
+    private async Task<SearchResults> SearchAsync(SearchEngine engine, string query, string path)
+    {
+        var searchResults = SearchResults.Empty;
+        try
+        {
+            _logger.LogInformation("Starting search query from {path}.", path);
+            searchResults = await _searchService.SearchAsync(engine, query);
+            _logger.LogInformation("Finishing search query from {path}.", path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed query from {path}", path);
+        }
+
+        return searchResults;
+    }
+}
+```
 
 ## Do not use the HttpContext after the request is complete
 

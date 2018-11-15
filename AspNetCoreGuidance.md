@@ -102,6 +102,8 @@ TBD
 
 ## Do not cache the access to IHttpContextAccessor.HttpContext
 
+TBD
+
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 
 The `HttpContext` is *NOT* threadsafe. Accessing it from multiple threads in parallel can cause corruption resulting in undefined behavior (hangs, crashes, data corruption).

@@ -12,6 +12,7 @@
    - [Cancelling uncancellable operations](#cancelling-uncancellable-operations)
    - [Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose](#always-call-flushasync-on-streamwriters-or-streams-before-calling-dispose)
    - [Prefer async/await over directly returning Task](#prefer-asyncawait-over-directly-returning-task)
+   - [ConfigureAwait](#configureawait)
  - [Scenarios](#scenarios)
    - [Timer callbacks](#timer-callbacks)
    - [Implicit async void delegates](#implicit-async-void-delegates)
@@ -576,6 +577,10 @@ public async Task<int> DoSomethingAsync()
 ```
 
 :bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
+
+## ConfigureAwait
+
+TDB
 
 # Scenarios
 

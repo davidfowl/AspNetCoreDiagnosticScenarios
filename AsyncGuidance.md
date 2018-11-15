@@ -599,13 +599,13 @@ public class Pinger
     
     public Pinger(HttpClient client)
     {
-        _client = new HttpClient();
+        _client = client;
         _timer = new Timer(Heartbeat, null, 1000, 1000);
     }
 
     public async void Heartbeat(object state)
     {
-        await httpClient.GetAsync("http://mybackend/api/ping");
+        await _client.GetAsync("http://mybackend/api/ping");
     }
 }
 ```
@@ -620,7 +620,7 @@ public class Pinger
     
     public Pinger(HttpClient client)
     {
-        _client = new HttpClient();
+        _client = client;
         _timer = new Timer(Heartbeat, null, 1000, 1000);
     }
 
@@ -642,7 +642,7 @@ public class Pinger
     
     public Pinger(HttpClient client)
     {
-        _client = new HttpClient();
+        _client = client;
         _timer = new Timer(Heartbeat, null, 1000, 1000);
     }
 

@@ -79,7 +79,6 @@ public class MyController : Controller
 }
 ```
 
-
 ## Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing
 
 TBD
@@ -87,6 +86,8 @@ TBD
 ## Avoid reading the entire request body or response body into memory
 
 TBD
+
+## Do not cache the access of IHttpContextAccessor in fields
 
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 

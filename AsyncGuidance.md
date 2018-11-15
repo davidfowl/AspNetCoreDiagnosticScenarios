@@ -626,7 +626,7 @@ public class Pinger
 
     public void Heartbeat(object state)
     {
-        httpClient.GetAsync("http://mybackend/api/ping").GetAwaiter().GetResult();
+        _client.GetAsync("http://mybackend/api/ping").GetAwaiter().GetResult();
     }
 }
 ```

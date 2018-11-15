@@ -1,4 +1,15 @@
-# WIP: ASP.NET Core Guidance
+# Table of contents
+ - [ASP.NET Core Guidance](#)
+   - [Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body](#)
+   - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#)
+   - [Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data](#)
+   - [Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing](#)
+   - [Avoid reading the entire request body or response body into memory](#)
+   - [Do not cache the access to IHttpContextAccessor.HttpContext](#)
+   - [Do not access the HttpContext from multiple threads in parallel. It is not thread safe.](#)
+   - [Do not use the HttpContext after the request is complete](#)
+
+# ASP.NET Core Guidance
 
 ASP.NET Core is a cross-platform, high-performance, open-source framework for building modern, cloud-based, Internet-connected applications. This guide captures some of the common pitfalls and practices when writing scalable server applications.
 
@@ -87,7 +98,7 @@ TBD
 
 TBD
 
-## Do not cache the access of IHttpContextAccessor in fields
+## Do not cache the access to IHttpContextAccessor.HttpContext
 
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 

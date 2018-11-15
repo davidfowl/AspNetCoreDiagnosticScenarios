@@ -1,13 +1,15 @@
 # Table of contents
- - [ASP.NET Core Guidance](#)
-   - [Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body](#)
-   - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#)
-   - [Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data](#)
-   - [Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing](#)
-   - [Avoid reading the entire request body or response body into memory](#)
-   - [Do not cache the access to IHttpContextAccessor.HttpContext](#)
-   - [Do not access the HttpContext from multiple threads in parallel. It is not thread safe.](#)
-   - [Do not use the HttpContext after the request is complete](#)
+ - [ASP.NET Core Guidance](#aspnet-core-guidance)
+   - [Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body](#avoid-using-synchronous-readwrite-overloads-on-httprequestbody-and-httpresponsebody)
+   - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#prefer-using-httprequestreadasformasync-over-httprequestform)
+   - [Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing](#use-buffering-and-synchronous-reads-and-writes-as-an-alternative-to-asynchronous-reading-and-writing)
+   - [Avoid reading the entire request body or response body into memory](#avoid-reading-the-entire-request-body-or-response-body-into-memory)
+   - [Do not cache the access to IHttpContextAccessor.HttpContext](#do-not-cache-the-access-to-ihttpcontextaccessorhttpcontext)
+   - [Do not access the HttpContext from multiple threads in parallel. It is not thread safe.](#do-not-access-the-httpcontext-from-multiple-threads-in-parallel-it-is-not-thread-safe)
+   - [Do not use the HttpContext after the request is complete](#do-not-use-the-httpcontext-after-the-request-is-complete)
+   - [Do not capture the HttpContext in background threads](#do-not-capture-the-httpcontext-in-background-threads)
+   - [Do not capture services injected into the controllers on background threads](#do-not-capture-services-injected-into-the-controllers-on-background-threads)
+   - [Avoid adding headers after the HttpResponse has started](#avoid-adding-headers-after-the-httpresponse-has-started)
 
 # ASP.NET Core Guidance
 

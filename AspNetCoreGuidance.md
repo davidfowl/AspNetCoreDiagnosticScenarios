@@ -43,7 +43,42 @@ public class MyController : Controller
 
 ## Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form
 
-TBD
+You should always prefer `HttpRequest.ReadAsFormAsync()` over `HttpRequest.Form`. The only time it is safe to use `HttpRequest.Form` is the form has already been read by a call to `HttpRequest.ReadAsFormAsync()` and the cached form value is being read using `HttpRequest.Form`. 
+
+❌ **BAD** This example uses HttpRequest.Form uses [sync over async](AsyncGuidance.md#avoid-using-taskresult-and-taskwait) under the covers and can lead to thread pool starvation (in some cases).
+
+```C#
+public class MyController : Controller
+{
+    [HttpGet("/form-body")]
+    public IActionResult Post()
+    {
+        var form = HttpRequest.Form;
+        
+        Process(form["id"], form["name"]);
+
+        return Accepted();
+    }
+}
+```
+
+:white_check_mark: **GOOD** This example uses `HttpRequest.ReadAsFormAsync()` to read the form body asynchronously.
+
+```C#
+public class MyController : Controller
+{
+    [HttpGet("/form-body")]
+    public async Task<IActionResult> Post()
+    {
+        var form = await HttpRequest.ReadAsFormAsync();
+        
+        Process(form["id"], form["name"]);
+
+        return Accepted();
+    }
+}
+```
+
 
 ## Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing
 

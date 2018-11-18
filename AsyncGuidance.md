@@ -144,6 +144,8 @@ Long running work in this context refers to a thread that's running for the life
 
 :bulb: **NOTE:`Task.Factory.StartNew` has an option `TaskCreationOptions.LongRunning` that under the covers creates a new thread and returns a Task that represents the execution. Using this properly requires several non-obvious parameters to be passed in to get the right behavior on all platforms.**
 
+:bulb: **NOTE: Don't use `TaskCreationOptions.LongRunning` with async code, it's will create a new thread, that will be destroyed after first `await`.**
+
 
 ❌ **BAD** This example steals a thread pool thread forever, to execute queued work on a `BlockingCollection<T>`.
 

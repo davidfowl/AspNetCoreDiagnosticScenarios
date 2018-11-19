@@ -44,7 +44,7 @@ namespace Scenarios.Controllers
         }
 
         [HttpGet("/big-json-content-5")]
-        public async Task<IActionResult> BigContentJsonManualUBuffered()
+        public async Task<IActionResult> BigContentJsonManualBuffered()
         {
             var obj = await _pokemonService.GetPokemonManualBufferedAsync();
             return Ok(obj);

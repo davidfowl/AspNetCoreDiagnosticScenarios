@@ -35,7 +35,7 @@ Once you go async, all of your callers **SHOULD** be async, since efforts to be 
 ```C#
 public int DoSomethingAsync()
 {
-    var result = CallDependencyAsync().Result
+    var result = CallDependencyAsync().Result;
     return result + 1;
 }
 ```

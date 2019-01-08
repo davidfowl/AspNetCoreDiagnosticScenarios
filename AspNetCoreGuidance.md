@@ -4,7 +4,7 @@
    - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#prefer-using-httprequestreadasformasync-over-httprequestform)
    - [Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing](#use-buffering-and-synchronous-reads-and-writes-as-an-alternative-to-asynchronous-reading-and-writing)
    - [Avoid reading the entire request body or response body into memory](#avoid-reading-the-entire-request-body-or-response-body-into-memory)
-   - [Do not cache the access to IHttpContextAccessor.HttpContext](#do-not-cache-the-access-to-ihttpcontextaccessorhttpcontext)
+   - [Do not store IHttpContextAccessor.HttpContext in a field](#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field)
    - [Do not access the HttpContext from multiple threads in parallel. It is not thread safe.](#do-not-access-the-httpcontext-from-multiple-threads-in-parallel-it-is-not-thread-safe)
    - [Do not use the HttpContext after the request is complete](#do-not-use-the-httpcontext-after-the-request-is-complete)
    - [Do not capture the HttpContext in background threads](#do-not-capture-the-httpcontext-in-background-threads)

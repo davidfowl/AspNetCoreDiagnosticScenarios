@@ -100,9 +100,54 @@ TBD
 
 TBD
 
-## Do not cache the access to IHttpContextAccessor.HttpContext
+## Do not store IHttpContextAccessor.HttpContext in a field
 
-TBD
+The `IHttpContextAccessor.HttpContext` will return the `HttpContext` of the active request when accessed from the request thread. It should not be stored in a field or variable.
+
+❌ **BAD** This example stores the HttpContext in a field then attempts to use it later.
+
+```C#
+public class MyType
+{
+    private readonly HttpContext _context;
+    public MyType(IHttpContextAccessor accessor)
+    {
+        _context = accessor.HttpContext;
+    }
+    
+    public void CheckAdmin()
+    {
+        if (!_context.User.IsInRole("admin"))
+        {
+            throw new UnauthorizedAccessException("The current user isn't an admin");
+        }
+    }
+}
+```
+
+The above logic will likely capture a null or bogus HttpContext in the constructor for later use.
+
+:white_check_mark: **GOOD** This example stores the IHttpContextAccesor itself in a field and uses the HttpContext field at the correct time (checking for null).
+
+```C#
+public class MyType
+{
+    private readonly IHttpContextAccessor _accessor;
+    public MyType(IHttpContextAccessor accessor)
+    {
+        _accessor = accessor;
+    }
+    
+    public void CheckAdmin()
+    {
+        var context = _accessor.HttpContext;
+        if (context != null && !context.User.IsInRole("admin"))
+        {
+            throw new UnauthorizedAccessException("The current user isn't an admin");
+        }
+    }
+}
+```
 
 ## Do not access the HttpContext from multiple threads in parallel. It is not thread safe.
 

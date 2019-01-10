@@ -750,7 +750,7 @@ public class PersonController : Controller
    public async Task<IActionResult> Get(int id)
    {
        var person = await _cache.GetOrAdd(id, (key) => db.People.FindAsync(key));
-       return Ok(person);
+       return Ok(person.Value);
    }
 }
 ```

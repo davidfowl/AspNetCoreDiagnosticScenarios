@@ -772,7 +772,7 @@ public class PersonController : Controller
    
    public async Task<IActionResult> Get(int id)
    {
-       var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => db.People.FindAsync(key)));
+       var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => db.People.FindAsync(key))).Value;
        return Ok(person);
    }
    

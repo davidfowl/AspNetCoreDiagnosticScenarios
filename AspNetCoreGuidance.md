@@ -271,39 +271,73 @@ public class AsyncController : Controller
 
 ## Do not capture the HttpContext in background threads
 
-TBD
+❌ **BAD** This example shows a closure is capturing the HttpContext from the Controller property. This is bad because this work item could run
+outside of the request scope and as a result, could lead to reading a bogus HttpContext.
+
+```C#
+[HttpGet("/fire-and-forget-1")]
+public IActionResult FireAndForget1()
+{
+    _ = Task.Run(() =>
+    {
+        await Task.Delay(1000);
+
+        // This closure is capturing the context from the Controller property. This is bad because this work item could run
+        // outside of the http request leading to reading of bogus data.
+        var path = HttpContext.Request.Path;
+        Log(path);
+    });
+
+    return Accepted();
+}
+```
+
+
+:white_check_mark: **GOOD** This example copies the data required in the background task during the request explictly and does not reference
+anything from the controller itself.
+
+```C#
+[HttpGet("/fire-and-forget-3")]
+public IActionResult FireAndForget3()
+{
+    string path = HttpContext.Request.Path;
+    _ = Task.Run(async () =>
+    {
+        await Task.Delay(1000);
+
+        // This captures just the path
+        Log(path);
+    });
+
+    return Accepted();
+}
+```
 
 ## Do not capture services injected into the controllers on background threads
 
-❌ **BAD** This example shows a closure is capturing the context from the Controller action parameter. This is bad because this work item could run
-outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will crash the process.
+❌ **BAD** This example shows a closure is capturing the DbContext from the Controller action parameter. This is bad because this work item could run
+outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will end up with an ObjectDisposedException.
 
 ```C#
-public class FireAndForgetController : Controller
+[HttpGet("/fire-and-forget-1")]
+public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
 {
-    [HttpGet("/fire-and-forget-1")]
-    public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
+    _ = Task.Run(() =>
     {
-        // This is an implicit async void method. ThreadPool.QueueUserWorkItem takes an Action, but the compiler allows
-        // async void delegates to be used in its place. This is dangerous because unhandled exceptions will bring down the entire server process.
-        ThreadPool.QueueUserWorkItem(async state =>
-        {
-            await Task.Delay(1000);
+        await Task.Delay(1000);
 
-            // This closure is capturing the context from the Controller action parameter. This is bad because this work item could run
-            // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will crash the process with
-            // and ObjectDisposedException
-            context.Pokemon.Add(new Pokemon());
-            await context.SaveChangesAsync();
-        });
+        // This closure is capturing the context from the Controller action parameter. This is bad because this work item could run
+        // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this throw an ObjectDisposedException
+        context.Pokemon.Add(new Pokemon());
+        await context.SaveChangesAsync();
+    });
 
-        return Accepted();
-    }
+    return Accepted();
 }
 ```
 
 :white_check_mark: **GOOD** This example injects an `IServiceScopeFactory` and creates a new dependency injection scope in the background thread and does not reference
-anything from the controller itself. It also uses `Task.Run` which will not crash the process if an exception occurs on the background thread.
+anything from the controller itself.
 
 ```C#
 [HttpGet("/fire-and-forget-3")]

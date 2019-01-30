@@ -74,7 +74,7 @@ public class MyController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** `Task`-returning methods are better since unhandled exceptions trigger the `[TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2)`.
+:white_check_mark: **GOOD** `Task`-returning methods are better since unhandled exceptions trigger the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
 
 ```C#
 public class MyController : Controller
@@ -354,7 +354,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:bulb:**NOTE: There are 2 enums that look alike. `[TaskCreationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously)` and `[TaskContinuationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0)`. Be careful not to confuse their usage.** 
+:bulb:**NOTE: There are 2 enums that look alike. [`TaskCreationOptions.RunContinuationsAsynchronously`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [`TaskContinuationOptions.RunContinuationsAsynchronously`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
 
 ## Always dispose `CancellationTokenSource`(s) used for timeouts
 
@@ -576,7 +576,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-:bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
+:bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the `Task`. It's always faster to directly return the `Task` since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
 
 ## ConfigureAwait
 
@@ -630,7 +630,7 @@ public class Pinger
 }
 ```
 
-:white_check_mark: **GOOD** This example uses an `async Task`-based method and discards the `Task` in the `Timer` callback. If this method fails, it will not crash the process. Instead, it will fire the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
+:white_check_mark: **GOOD** This example uses an `async Task`-based method and discards the `Task` in the `Timer` callback. If this method fails, it will not crash the process. Instead, it will fire the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
 
 ```C#
 public class Pinger

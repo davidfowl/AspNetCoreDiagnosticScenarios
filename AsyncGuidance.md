@@ -220,7 +220,7 @@ Using Task.Result or Task.Wait to block wait on an asynchronous operation to com
 
 - An asynchronous operation is kicked off.
 - The calling thread is blocked waiting for that operation to complete.
-- When the asynchronous operation completes, it schedules a continuation to the thread pool to resume the code waiting on that operation.
+- When the asynchronous operation completes, it unblocks the code waiting on that operation. This takes place on another thread.
 
 The result is that we need to use 2 threads instead of 1 to complete synchronous operations. This usually leads to [thread pool starvation](https://blogs.msdn.microsoft.com/vancem/2018/10/16/diagnosing-net-core-threadpool-starvation-with-perfview-why-my-service-is-not-saturating-all-cores-or-seems-to-stall/) and results in service outages.
 

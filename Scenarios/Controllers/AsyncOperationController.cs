@@ -81,7 +81,7 @@ namespace Scenarios.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/async-7")]
+        [HttpGet("/async-8")]
         public async Task<IActionResult> BadBlocking8()
         {
             var service = new LegacyService();
@@ -94,7 +94,7 @@ namespace Scenarios.Controllers
         /// <summary>
         /// DoSyncOperationWithAsyncReturn has an async API over a synchronous call.
         /// </summary>
-        [HttpGet("/async-8")]
+        [HttpGet("/async-9")]
         public async Task<IActionResult> GoodBlocking()
         {
             var service = new LegacyService();
@@ -104,7 +104,7 @@ namespace Scenarios.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/async-9")]
+        [HttpGet("/async-10")]
         public async Task<IActionResult> AsyncCall()
         {
             var service = new LegacyService();
@@ -114,7 +114,7 @@ namespace Scenarios.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/async-10")]
+        [HttpGet("/async-11")]
         public async Task<IActionResult> AsyncCallLegacyBad()
         {
             var service = new LegacyService();
@@ -124,7 +124,7 @@ namespace Scenarios.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/async-11")]
+        [HttpGet("/async-12")]
         public async Task<IActionResult> AsyncCallLegacyGood()
         {
             var service = new LegacyService();

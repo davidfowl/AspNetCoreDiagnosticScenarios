@@ -288,7 +288,7 @@ public string DoOperationBlocking7()
 
 ## Prefer await over ContinueWith
 
-`Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without a reliance the language. Although these
+`Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without a reliance on the language. Although these
 methods are still valid to use, we generally recommend that you prefer async/await to using ContinueWith. ContinueWith also does not capture the `SynchronizationContext` and as a result is actually semantically different to async/await.
 
 ❌ **BAD** The example uses ContinueWith instead of async

@@ -74,7 +74,7 @@ public class MyController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** Task returning methods are better since unhandled exceptions trigger the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
+:white_check_mark: **GOOD** `Task`-returning methods are better since unhandled exceptions trigger the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2).
 
 ```C#
 public class MyController : Controller
@@ -94,11 +94,11 @@ public class MyController : Controller
 }
 ```
 
-## Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data
+## Prefer `Task.FromResult` over `Task.Run` for pre-computed or trivially computed data
 
 For pre-computed results, there's no need to call `Task.Run`, that will end up queuing a work item to the thread pool that will immediately complete with the pre-computed value. Instead, use `Task.FromResult`, to create a task wrapping already computed data.
 
-❌ **BAD** This example wastes a thread pool thread to return a trivially computed value.
+❌ **BAD** This example wastes a thread-pool thread to return a trivially computed value.
 
 ```C#
 public class MyLibrary
@@ -122,7 +122,7 @@ public class MyLibrary
 }
 ```
 
-:bulb:**NOTE: Using Task.FromResult will result in a Task allocation. Using ValueTask\<T\> can completely remove that allocation.**
+:bulb:**NOTE: Using `Task.FromResult` will result in a `Task` allocation. Using `ValueTask\<T\>` can completely remove that allocation.**
 
 :white_check_mark: **GOOD** This example uses a `ValueTask<int>` to return the trivially computed value. It does not use any extra threads as a result. It also does not allocate an object on the managed heap.
 
@@ -138,7 +138,7 @@ public class MyLibrary
 
 ## Avoid using Task.Run for long running work that blocks the thread
 
-Long running work in this context refers to a thread that's running for the lifetime of the application doing background work (like processing queue items, or sleeping and waking up to process some data). `Task.Run` will queue a work item to thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread pool thread for long running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
+Long running work in this context refers to a thread that's running for the lifetime of the application doing background work (like processing queue items, or sleeping and waking up to process some data). `Task.Run` will queue a work item to the thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread-pool thread for long-running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
 
 :bulb: **NOTE: The thread pool grows if you block threads but it's bad practice to do so.**
 
@@ -147,7 +147,7 @@ Long running work in this context refers to a thread that's running for the life
 :bulb: **NOTE: Don't use `TaskCreationOptions.LongRunning` with async code as this will create a new thread which will be destroyed after first `await`.**
 
 
-❌ **BAD** This example steals a thread pool thread forever, to execute queued work on a `BlockingCollection<T>`.
+❌ **BAD** This example steals a thread-pool thread forever, to execute queued work on a `BlockingCollection<T>`.
 
 ```C#
 public class QueueProcessor
@@ -176,7 +176,7 @@ public class QueueProcessor
 }
 ```
 
-:white_check_mark: **GOOD** This example uses a dedicated thread to process the message queue instead of a thread pool thread.
+:white_check_mark: **GOOD** This example uses a dedicated thread to process the message queue instead of a thread-pool thread.
 
 ```C#
 public class QueueProcessor
@@ -210,27 +210,27 @@ public class QueueProcessor
 }
 ```
 
-## Avoid using Task.Result and Task.Wait
+## Avoid using `Task.Result` and `Task.Wait`
 
-There are very few ways to use Task.Result and Task.Wait correctly so the general advice is to completely avoid using them in your code. 
+There are very few ways to use `Task.Result` and `Task.Wait` correctly so the general advice is to completely avoid using them in your code. 
 
-### :warning: Sync over async
+### :warning: Sync over `async`
 
-Using Task.Result or Task.Wait to block wait on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over async". Here is what happens at a very high level:
+Using `Task.Result` or `Task.Wait` to block wait on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over async". Here is what happens at a very high level:
 
 - An asynchronous operation is kicked off.
 - The calling thread is blocked waiting for that operation to complete.
 - When the asynchronous operation completes, it unblocks the code waiting on that operation. This takes place on another thread.
 
-The result is that we need to use 2 threads instead of 1 to complete synchronous operations. This usually leads to [thread pool starvation](https://blogs.msdn.microsoft.com/vancem/2018/10/16/diagnosing-net-core-threadpool-starvation-with-perfview-why-my-service-is-not-saturating-all-cores-or-seems-to-stall/) and results in service outages.
+The result is that we need to use 2 threads instead of 1 to complete synchronous operations. This usually leads to [thread-pool starvation](https://blogs.msdn.microsoft.com/vancem/2018/10/16/diagnosing-net-core-threadpool-starvation-with-perfview-why-my-service-is-not-saturating-all-cores-or-seems-to-stall/) and results in service outages.
 
 ### :warning: Deadlocks
 
-The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has lead to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's is no good way to block waiting for a Task to complete.
+The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has led to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's no good way to block waiting for a Task to complete.
 
-:bulb:**NOTE: ASP.NET Core does not have a SynchronizationContext and is not prone to the deadlock problem.**
+:bulb:**NOTE: ASP.NET Core does not have a `SynchronizationContext` and is not prone to the deadlock problem.**
 
-❌ **BAD** The below are all examples that are in some cases trying to avoid the dead lock situation but still succumb to "sync over async" problems.
+❌ **BAD** The below are all examples that are, in one way or another, trying to avoid the deadlock situation but still succumb to "sync over async" problems.
 
 ```C#
 public string DoOperationBlocking()
@@ -286,12 +286,11 @@ public string DoOperationBlocking7()
 }
 ```
 
-## Prefer await over ContinueWith
+## Prefer `await` over `ContinueWith`
 
-`Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without a reliance the language. Although these
-methods are still valid to use, we generally recommend that you prefer async/await to using ContinueWith. ContinueWith also does not capture the `SynchronizationContext` and as a result is actually semantically different to async/await.
+`Task` existed before the async/await keywords were introduced and as such provided ways to execute continuations without relying on the language. Although these methods are still valid to use, we generally recommend that you prefer `async`/`await` to using `ContinueWith`. `ContinueWith` also does not capture the `SynchronizationContext` and as a result is actually semantically different to `async`/`await`.
 
-❌ **BAD** The example uses ContinueWith instead of async
+❌ **BAD** The example uses `ContinueWith` instead of `async`
 
 ```C#
 public Task<int> DoSomethingAsync()
@@ -303,7 +302,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark: **GOOD** This example uses the await keyword to get the result from `CallDependencyAsync`.
+:white_check_mark: **GOOD** This example uses the `await` keyword to get the result from `CallDependencyAsync`.
 
 ```C#
 public async Task<int> DoSomethingAsync()
@@ -313,13 +312,13 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-## Always create TaskCompletionSource\<T\> with TaskCreationOptions.RunContinuationsAsynchronously
+## Always create `TaskCompletionSource\<T\>` with `TaskCreationOptions.RunContinuationsAsynchronously`
 
-`TaskCompletionSource<T>` is an important building block for libraries trying to adapt things that are not inherently awaitable to be awaitable via a `Task`. It is also commonly used to build higher level operations (such as batching and other combinatiors) on top of existing asynchronous APIs. By default, `Task` continuations will run *inline* on the same thread that calls Try/Set(Result/Exception/Canceled). As a library author, this means having to understand that calling code can resume directly on your thread. This is extremely dangerous and can result in deadlocks, thread pool starvation, corruption of state (if code runs unexpectedly) and more. 
+`TaskCompletionSource<T>` is an important building block for libraries trying to adapt things that are not inherently awaitable to be awaitable via a `Task`. It is also commonly used to build higher-level operations (such as batching and other combinators) on top of existing asynchronous APIs. By default, `Task` continuations will run *inline* on the same thread that calls Try/Set(Result/Exception/Canceled). As a library author, this means having to understand that calling code can resume directly on your thread. This is extremely dangerous and can result in deadlocks, thread-pool starvation, corruption of state (if code runs unexpectedly) and more. 
 
 Always use `TaskCreationOptions.RunContinuationsAsynchronously` when creating the `TaskCompletionSource<T>`. This will dispatch the continuation onto the thread pool instead of executing it inline.
 
-❌ **BAD** This example does not use TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
+❌ **BAD** This example does not use `TaskCreationOptions.RunContinuationsAsynchronously` when creating the `TaskCompletionSource<T>`.
 
 ```C#
 public Task<int> DoSomethingAsync()
@@ -337,7 +336,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark: **GOOD** This example uses TaskCreationOptions.RunContinuationsAsynchronously when creating the `TaskCompletionSource<T>`.
+:white_check_mark: **GOOD** This example uses `TaskCreationOptions.RunContinuationsAsynchronously` when creating the `TaskCompletionSource<T>`.
 
 ```C#
 public Task<int> DoSomethingAsync()
@@ -347,7 +346,7 @@ public Task<int> DoSomethingAsync()
     var operation = new LegacyAsyncOperation();
     operation.Completed += result =>
     {
-        // Code awaiting on this task will resume on a different thread pool thread
+        // Code awaiting on this task will resume on a different thread-pool thread
         tcs.SetResult(result);
     };
     
@@ -355,11 +354,11 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:bulb:**NOTE: There are 2 enums that look alike. [TaskCreationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [TaskContinuationOptions.RunContinuationsAsynchronously](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
+:bulb:**NOTE: There are 2 enums that look alike. [`TaskCreationOptions.RunContinuationsAsynchronously`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcreationoptions?view=netcore-2.0#System_Threading_Tasks_TaskCreationOptions_RunContinuationsAsynchronously) and [`TaskContinuationOptions.RunContinuationsAsynchronously`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcontinuationoptions?view=netcore-2.0). Be careful not to confuse their usage.** 
 
-## Always dispose CancellationTokenSource(s) used for timeouts
+## Always dispose `CancellationTokenSource`(s) used for timeouts
 
-CancellationTokenSources that are used for timeouts (are created with timers or uses the CancelAfter method), can put pressure on the timer queue if not disposed. 
+`CancellationTokenSource` objects that are used for timeouts (are created with timers or uses the `CancelAfter` method), can put pressure on the timer queue if not disposed.
 
 ❌ **BAD** This example does not dispose the `CancellationTokenSource` and as a result the timer stays in the queue for 10 seconds after each request is made.
 
@@ -392,11 +391,11 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 }
 ```
 
-## Always flow CancellationToken(s) to APIs that take a CancellationToken
+## Always flow `CancellationToken`(s) to APIs that take a `CancellationToken`
 
-Cancellation is coorperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
+Cancellation is cooperative in .NET. Everything in the call-chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
 
-❌ **BAD** This example neglects to pass the CancellationToken to `Stream.ReadAsync` making the operation effectively not cancellable.
+❌ **BAD** This example neglects to pass the `CancellationToken` to `Stream.ReadAsync` making the operation effectively not cancellable.
 
 ```C#
 public async Task<string> DoAsyncThing(CancellationToken cancellationToken = default)
@@ -408,7 +407,7 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 }
 ```
 
-:white_check_mark: **GOOD** This example passes the CancellationToken into `Stream.ReadAsync`.
+:white_check_mark: **GOOD** This example passes the `CancellationToken` into `Stream.ReadAsync`.
 
 ```C#
 public async Task<string> DoAsyncThing(CancellationToken cancellationToken = default)
@@ -422,8 +421,7 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 
 ## Cancelling uncancellable operations
 
-One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means creating another task
-that completes when a timeout or `CancellationToken` fires, and then using `Task.WhenAny` to detect a complete or cancelled operation.
+One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means creating another task that completes when a timeout or `CancellationToken` fires, and then using `Task.WhenAny` to detect a complete or cancelled operation.
 
 ### Using CancellationTokens
 
@@ -474,7 +472,7 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 
 ### Using a timeout
 
-❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers that can flood the timer queue. 
+❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers, which can flood the timer queue. 
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -518,13 +516,13 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
-## Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose
+## Always call `FlushAsync` on `StreamWriter`(s) or `Stream`(s) before calling `Dispose`
 
-When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush which results in blocking the thread and could lead to thread pool starvation.
+When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush, which results in blocking the thread and could lead to thread-pool starvation.
 
 :bulb:**NOTE: This is only problematic if the underlying subsystem does IO.**
 
-❌ **BAD** This example ends up blocking the request by writing synchronously to the http response body.
+❌ **BAD** This example ends up blocking the request by writing synchronously to the HTTP-response body.
 
 ```C#
 app.Run(async context =>
@@ -552,13 +550,13 @@ app.Run(async context =>
 });
 ```
 
-## Prefer async/await over directly returning Task
+## Prefer `async`/`await` over directly returning `Task`
 
-There are benefits to using the async/await keyword instead of directly returning the Task:
+There are benefits to using the `async`/`await` keyword instead of directly returning the `Task`:
 - Asynchronous and synchronous exceptions are normalized to always be asynchronous.
-- The code is easier to modify (consider adding a using for example).
+- The code is easier to modify (consider adding a `using`, for example).
 - Diagnostics of asynchronous methods are easier (debugging hangs etc).
-- Exceptions thrown will be automatically wrapped in the returned Task instead of surprising the caller with an actual exception.
+- Exceptions thrown will be automatically wrapped in the returned `Task` instead of surprising the caller with an actual exception.
 
 ❌ **BAD** This example directly returns the `Task` to the caller.
 
@@ -578,7 +576,7 @@ public async Task<int> DoSomethingAsync()
 }
 ```
 
-:bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the Task. It's always faster to directly return the Task since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
+:bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the `Task`. It's always faster to directly return the `Task` since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
 
 ## ConfigureAwait
 
@@ -586,12 +584,11 @@ TDB
 
 # Scenarios
 
-The above tries to distill general guidance but doesn't do justice to the kinds of real world situation that cause code like this to be written in the first place (bad code). This section tries to take concrete examples from real applications and turn them into something simple to help you relate these problems to existing code bases.
+The above tries to distill general guidance, but doesn't do justice to the kinds of real-world situations that cause code like this to be written in the first place (bad code). This section tries to take concrete examples from real applications and turn them into something simple to help you relate these problems to existing codebases.
 
-## Timer callbacks
+## `Timer` callbacks
 
-❌ **BAD** The timer callback is void returning and we have asynchronous work to execute. This example uses async void to accomplish it and as a result
-can crash the process if there's an exception thrown.
+❌ **BAD** The `Timer` callback is `void`-returning and we have asynchronous work to execute. This example uses `async void` to accomplish it and as a result can crash the process if an exception occurs.
 
 ```C#
 public class Pinger
@@ -612,7 +609,7 @@ public class Pinger
 }
 ```
 
-❌ **BAD** This attempts to block in the timer callback. This may result in thread pool starvation and is an example of [sync over async](#warning-sync-over-async)
+❌ **BAD** This attempts to block in the `Timer` callback. This may result in thread-pool starvation and is an example of [sync over async](#warning-sync-over-async)
 
 ```C#
 public class Pinger
@@ -633,8 +630,7 @@ public class Pinger
 }
 ```
 
-:white_check_mark: **GOOD** This example uses an async Task based method and discards the Task in the Timer callback. If this method fails, it will not crash the process.
-Instead, it will fire the [TaskScheduler.UnobservedTaskException](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
+:white_check_mark: **GOOD** This example uses an `async Task`-based method and discards the `Task` in the `Timer` callback. If this method fails, it will not crash the process. Instead, it will fire the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
 
 ```C#
 public class Pinger
@@ -661,11 +657,11 @@ public class Pinger
 }
 ```
 
-## Implicit async void delegates
+## Implicit `async void` delegates
 
 Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.
 
-❌ **BAD** This will force callers to either block in the callback or use an async void delegate.
+❌ **BAD** This will force callers to either block in the callback or use an `async void` delegate.
 
 ```C#
 public class BackgroundQueue
@@ -674,7 +670,7 @@ public class BackgroundQueue
 }
 ```
 
-❌ **BAD** This calling code is creating an async void method implicitly. The compiler fully supports this today.
+❌ **BAD** This calling code is creating an `async void` method implicitly. The compiler fully supports this today.
 
 ```C#
 public class Program
@@ -692,7 +688,7 @@ public class Program
 }
 ```
 
-:white_check_mark: **GOOD** This BackgroundQueue implementation offers both sync and async callback overloads.
+:white_check_mark: **GOOD** This BackgroundQueue implementation offers both sync and `async` callback overloads.
 
 ```C#
 public class BackgroundQueue
@@ -702,11 +698,11 @@ public class BackgroundQueue
 }
 ```
 
-## ConcurrentDictionary.GetOrAdd
+## `ConcurrentDictionary.GetOrAdd`
 
-It's pretty common to cache the result of an asynchronous operation and ConcurrentDictionary is a good data structure for doing that. GetOrAdd is a convenience API for trying to get an item if it's already there or adding it if it isn't. The callback is synchronous so it's tempting to write code that uses Task.Result to produce the value of an asynchronous process but that can lead to thread pool starvation.
+It's pretty common to cache the result of an asynchronous operation and `ConcurrentDictionary` is a good data structure for doing that. `GetOrAdd` is a convenience API for trying to get an item if it's already there or adding it if it isn't. The callback is synchronous so it's tempting to write code that uses `Task.Result` to produce the value of an asynchronous process but that can lead to thread-pool starvation.
 
-❌ **BAD** This may result in thread pool starvation since we're blocking the request thread if the person data is not cached.
+❌ **BAD** This may result in thread-pool starvation since we're blocking the request thread if the person data is not cached.
 
 ```C#
 public class PersonController : Controller
@@ -729,10 +725,9 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** This implementation won't result in thread pool starvation since we're storing a task instead of the result itself.
+:white_check_mark: **GOOD** This implementation won't result in thread-pool starvation since we're storing a task instead of the result itself.
 
-:warning: ConcurrentDictionary.GetOrAdd will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations
-multiple times.
+:warning: `ConcurrentDictionary.GetOrAdd` will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations multiple times.
 
 ```C#
 public class PersonController : Controller
@@ -755,7 +750,7 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** This implementation fixes the multiple executing callback issue by using the async lazy pattern.
+:white_check_mark: **GOOD** This implementation fixes the multiple-executing callback issue by using the `async` lazy pattern.
 
 ```C#
 public class PersonController : Controller
@@ -787,7 +782,7 @@ public class PersonController : Controller
 
 ## Constructors
 
-Constructors are synchronous. If you need to initialize some logic that may be asynchronous, there are a couple patterns for dealing with this.
+Constructors are synchronous. If you need to initialize some logic that may be asynchronous, there are a couple of patterns for dealing with this.
 
 Here's an example of using a client API that needs to connect asynchronously before use.
 
@@ -805,7 +800,7 @@ public interface IRemoteConnection
 ```
 
 
-❌ **BAD** This example uses Task.Result to get the connection in the constructor. This could lead to thread pool starvation and dead locks.
+❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
 
 ```C#
 public class Service : IService
@@ -842,8 +837,7 @@ public class Service : IService
 
 This API runs the specified action as the impersonated Windows identity. Unfortunately there's no asynchronous version of the callback.
 
-❌ **BAD** This example tries to execute the query asynchronously but then wait for it outside of the call to RunImpersonated. This will throw
-because the query might be executing outside of the impersonation context.
+❌ **BAD** This example tries to execute the query asynchronously, and then wait for it outside of the call to `RunImpersonated`. This will throw because the query might be executing outside of the impersonation context.
 
 ```C#
 public async Task<IEnumerable<Product>> GetDataImpersonatedAsync()
@@ -857,7 +851,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync()
 }
 ```
 
-❌ **BAD** This example uses Task.Result to get the connection in the constructor. This could lead to thread pool starvation and dead locks.
+❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
 
 ```C#
 public IEnumerable<Product> GetDataImpersonatedAsync()

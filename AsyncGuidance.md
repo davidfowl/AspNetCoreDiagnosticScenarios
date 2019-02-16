@@ -122,7 +122,7 @@ public class MyLibrary
 }
 ```
 
-:bulb:**NOTE: Using `Task.FromResult` will result in a `Task` allocation. Using `ValueTask\<T\>` can completely remove that allocation.**
+:bulb:**NOTE: Using `Task.FromResult` will result in a `Task` allocation. Using `ValueTask<T>` can completely remove that allocation.**
 
 :white_check_mark: **GOOD** This example uses a `ValueTask<int>` to return the trivially computed value. It does not use any extra threads as a result. It also does not allocate an object on the managed heap.
 

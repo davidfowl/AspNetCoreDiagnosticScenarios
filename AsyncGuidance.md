@@ -425,7 +425,7 @@ One of the coding patterns that appears when doing asynchronous programming is c
 
 ### Using CancellationTokens
 
-❌ **BAD** This example uses `Task.Delay(-1, token)` to create the `Task` fires when the `CancellationToken` fires, but if it doesn't fire, there's no way to dispose the `CancellationTokenRegistration`. This can lead to a memory leak.
+❌ **BAD** This example uses `Task.Delay(-1, token)` to create a `Task` that completes when the `CancellationToken` fires, but if it doesn't fire, there's no way to dispose the `CancellationTokenRegistration`. This can lead to a memory leak.
 
 ```C#
 public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)

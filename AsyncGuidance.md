@@ -840,13 +840,15 @@ This API runs the specified action as the impersonated Windows identity. Unfortu
 ❌ **BAD** This example tries to execute the query asynchronously, and then wait for it outside of the call to `RunImpersonated`. This will throw because the query might be executing outside of the impersonation context.
 
 ```C#
-public async Task<IEnumerable<Product>> GetDataImpersonatedAsync()
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
 {
     Task<IEnumerable<Product>> products = null;
-    WindowsIdentity.RunImpersonated(context =>
-    {
-        products = _db.QueryAsync("SELECT Name from Products");
-    }};
+    WindowsIdentity.RunImpersonated(
+        safeAccessTokenHandle,
+        context =>
+        {
+            products = _db.QueryAsync("SELECT Name from Products");
+        }};
     return await products;
 }
 ```
@@ -854,12 +856,11 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync()
 ❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
 
 ```C#
-public IEnumerable<Product> GetDataImpersonatedAsync()
+public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
 {
-    return WindowsIdentity.RunImpersonated(context =>
-    {
-         return _db.QueryAsync("SELECT Name from Products").Result;
-    });
+    return WindowsIdentity.RunImpersonated(
+        safeAccessTokenHandle,
+        context => _db.QueryAsync("SELECT Name from Products").Result);
 }
 ```
 

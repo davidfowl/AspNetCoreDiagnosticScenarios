@@ -251,7 +251,7 @@ public string DoOperationBlocking2()
 public string DoOperationBlocking3()
 {
     // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
-    // In the case of an exception, this method will throw an AggregateException containing another AggregateException, containing the origonal exception.
+    // In the case of an exception, this method will throw an AggregateException containing another AggregateException, containing the original exception.
     return Task.Run(() => DoAsyncOperation().Result).Result;
 }
 

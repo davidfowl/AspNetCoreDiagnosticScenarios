@@ -44,7 +44,7 @@ public class MyController : Controller
     [HttpGet("/pokemon")]
     public async Task<ActionResult<PokemonData>> Get()
     {
-        // This synchronously reads the entire http request body into memory.
+        // This asynchronously reads the entire http request body into memory.
         var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
         return JsonConvert.DeserializeObject<PokemonData>(json);

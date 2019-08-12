@@ -63,7 +63,7 @@ You should always prefer `HttpRequest.ReadAsFormAsync()` over `HttpRequest.Form`
 ```C#
 public class MyController : Controller
 {
-    [HttpGet("/form-body")]
+    [HttpPost("/form-body")]
     public IActionResult Post()
     {
         var form = HttpRequest.Form;
@@ -80,7 +80,7 @@ public class MyController : Controller
 ```C#
 public class MyController : Controller
 {
-    [HttpGet("/form-body")]
+    [HttpPost("/form-body")]
     public async Task<IActionResult> Post()
     {
         var form = await HttpRequest.ReadAsFormAsync();

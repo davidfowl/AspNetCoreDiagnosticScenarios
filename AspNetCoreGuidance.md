@@ -2,8 +2,8 @@
  - [ASP.NET Core Guidance](#aspnet-core-guidance)
    - [Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body](#avoid-using-synchronous-readwrite-overloads-on-httprequestbody-and-httpresponsebody)
    - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#prefer-using-httprequestreadasformasync-over-httprequestform)
-   - [Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing](#use-buffering-and-synchronous-reads-and-writes-as-an-alternative-to-asynchronous-reading-and-writing)
-   - [Avoid reading the entire request body or response body into memory](#avoid-reading-the-entire-request-body-or-response-body-into-memory)
+   - [Use buffered and synchronous reads and writes as an alternative to asynchronous reading and writing](#use-buffered-and-synchronous-reads-and-writes-as-an-alternative-to-asynchronous-reading-and-writing)
+   - [Avoid reading large request bodies or response bodies into memory](#avoid-reading-large-request-bodies-or-response-bodies-into-memory)
    - [Do not store IHttpContextAccessor.HttpContext in a field](#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field)
    - [Do not access the HttpContext from multiple threads in parallel. It is not thread safe.](#do-not-access-the-httpcontext-from-multiple-threads-in-parallel-it-is-not-thread-safe)
    - [Do not use the HttpContext after the request is complete](#do-not-use-the-httpcontext-after-the-request-is-complete)
@@ -92,13 +92,24 @@ public class MyController : Controller
 }
 ```
 
-## Use buffering and synchronous reads and writes as an alternative to asynchronous reading and writing
+## Avoid reading large request bodies or response bodies into memory
 
-TBD
+In .NET any single object allocation greater than 85KB ends up in the large object heap ([LOH](https://blogs.msdn.microsoft.com/maoni/2006/04/19/large-object-heap/)). Large objects are expensive in 2 ways:
 
-## Avoid reading the entire request body or response body into memory
+- The allocation cost is high because the memory for a newly allocated large object has to be cleared (the CLR guarantees that memory for all newly allocated objects is cleared)
+- LOH is collected with the rest of the heap (it requires a "full garbage collection" or Gen2 collection)
 
-TBD
+This [blog post](https://adamsitnik.com/Array-Pool/#the-problem) describes the problem succinctly:
+
+> When a large object is allocated, it’s marked as Gen 2 object. Not Gen 0 as for small objects. The consequences are that if you run out of memory in LOH, GC cleans up whole managed heap, not only LOH. So it cleans up Gen 0, Gen 1 and Gen 2 including LOH. This is called full garbage collection and is the most time-consuming garbage collection. For many applications, it can be acceptable. But definitely not for high-performance web servers, where few big memory buffers are needed to handle an average web request (read from a socket, decompress, decode JSON & more).
+
+Naively storing a large request or response body into a single `byte[]` or `string` may result in quickly running out of space in the LOH and may cause performance issues for your application because of full GCs running. 
+
+## Use buffered and synchronous reads and writes as an alternative to asynchronous reading and writing
+
+When using a serializer/de-serializer that only supports synchronous reads and writes (like JSON.NET) then prefer buffering the data into memory before passing data into the serializer/de-serializer.
+
+:bulb:**NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See [this](#avoid-reading-large-request-bodies-or-response-bodies-into-memory) for more information.**
 
 ## Do not store IHttpContextAccessor.HttpContext in a field
 

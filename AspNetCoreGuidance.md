@@ -52,7 +52,7 @@ public class MyController : Controller
 }
 ```
 
-:bulb:**NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See [this](#avoid-reading-the-entire-request-body-or-response-body-into-memory) for more information.**
+:bulb:**NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See [this](#avoid-reading-large-request-bodies-or-response-bodies-into-memory) for more information.**
 
 ## Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form
 

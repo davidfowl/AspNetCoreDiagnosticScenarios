@@ -719,7 +719,7 @@ public class PersonController : Controller
    
    public IActionResult Get(int id)
    {
-       var person = _cache.GetOrAdd(id, (key) => db.People.FindAsync(key).Result);
+       var person = _cache.GetOrAdd(id, (key) => _db.People.FindAsync(key).Result);
        return Ok(person);
    }
 }
@@ -744,7 +744,7 @@ public class PersonController : Controller
    
    public async Task<IActionResult> Get(int id)
    {
-       var person = await _cache.GetOrAdd(id, (key) => db.People.FindAsync(key));
+       var person = await _cache.GetOrAdd(id, (key) => _db.People.FindAsync(key));
        return Ok(person);
    }
 }
@@ -767,7 +767,7 @@ public class PersonController : Controller
    
    public async Task<IActionResult> Get(int id)
    {
-       var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => db.People.FindAsync(key))).Value;
+       var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => _db.People.FindAsync(key))).Value;
        return Ok(person);
    }
    

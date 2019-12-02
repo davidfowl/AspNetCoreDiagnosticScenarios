@@ -9,6 +9,5 @@ Next you can find some guides for writing scalable services in ASP.NET Core. Som
 
 - [General ASP.NET Core](AspNetCoreGuidance.md)
 - [Asynchronous Programming](AsyncGuidance.md)
-- [.NET API Gotchas](Gotchas.md)
 
 *NOTE:* The examples shown here are based on experiences with customer applications and issues found on Github and Stack Overflow.

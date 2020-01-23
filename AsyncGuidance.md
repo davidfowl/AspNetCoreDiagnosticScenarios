@@ -518,7 +518,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 
 ## Always call `FlushAsync` on `StreamWriter`(s) or `Stream`(s) before calling `Dispose`
 
-When writing to a `Stream` or `StreamWriter` even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` will synchronously write/flush, which results in blocking the thread and could lead to thread-pool starvation.
+When writing to a `Stream` or `StreamWriter`, even if the asynchronous overloads are used for writing, the underlying data might be buffered. When data is buffered, disposing the `Stream` or `StreamWriter` via the `Dispose` method will synchronously write/flush, which results in blocking the thread and could lead to thread-pool starvation. Either use the asynchronous `DisposeAsync` method (for example via `await using`) or call `FlushAsync` before calling `Dispose`.
 
 :bulb:**NOTE: This is only problematic if the underlying subsystem does IO.**
 
@@ -529,6 +529,19 @@ app.Run(async context =>
 {
     // The implicit Dispose call will synchronously write to the response body
     using (var streamWriter = new StreamWriter(context.Response.Body))
+    {
+        await streamWriter.WriteAsync("Hello World");
+    }
+});
+```
+
+:white_check_mark: **GOOD** This example asynchronously flushes any buffered data while disposing the `StreamWriter`.
+
+```C#
+app.Run(async context =>
+{
+    // The implicit AsyncDispose call will flush asynchronously
+    await using (var streamWriter = new StreamWriter(context.Response.Body))
     {
         await streamWriter.WriteAsync("Hello World");
     }

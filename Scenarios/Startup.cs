@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Scenarios.Services;
 
 namespace Scenarios
@@ -46,7 +47,7 @@ namespace Scenarios
             services.AddSingleton<LazyRemoteConnection>();
             services.AddSingleton<RemoteConnectionFactory>();
 
-            services.AddMvc();
+            services.AddControllers();
         }
 
         private async Task<LoggingRemoteConnection> GetLoggingRemoteConnection(IServiceProvider sp)
@@ -66,7 +67,7 @@ namespace Scenarios
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, PokemonDbContext context)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, PokemonDbContext context)
         {
             if (env.IsDevelopment())
             {
@@ -75,7 +76,12 @@ namespace Scenarios
 
             app.UseFileServer();
 
-            app.UseMvc();
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
 
             // Force database seeding to execute
             context.Database.EnsureCreated();

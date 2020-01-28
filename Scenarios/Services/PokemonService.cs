@@ -107,5 +107,15 @@ namespace Scenarios.Services
                 return serializer.Deserialize<PokemonData>(reader);
             }
         }
+
+        public async Task<PokemonData> GetPokemonAsyncNewJson()
+        {
+            using var response = await _client.GetAsync(_url, HttpCompletionOption.ResponseHeadersRead);
+
+            // Get the response stream
+            var responseStream = await response.Content.ReadAsStreamAsync();
+
+            return await System.Text.Json.JsonSerializer.DeserializeAsync<PokemonData>(responseStream);
+        }
     }
 }

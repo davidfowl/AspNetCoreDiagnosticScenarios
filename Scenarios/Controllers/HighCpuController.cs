@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,12 +13,17 @@ namespace Scenarios.Controllers
         [HttpPost("/cpu-1")]
         public string BurnCpu()
         {
-            var spin = new System.Threading.SpinWait();
-            for (int i = 0; i < 100000; i++)
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+
+            while (true)
             {
-                spin.SpinOnce();
+                watch.Stop();
+                if (watch.ElapsedMilliseconds > 1000 * 5)
+                    break;
+                watch.Start();
             }
-            return "Done";
+            return "Working";
         }
     }
 }

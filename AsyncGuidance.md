@@ -593,8 +593,86 @@ public async Task<int> DoSomethingAsync()
 
 ## ConfigureAwait
 
-TBD
+`ConfigureAwait` is used to modify the awaitable struct returned by the awaitable method returning a `Task`.
+It changes whether the original thread context or thread scheduler is used when resuming the continuation after `await`.
 
+In practice, this means that code executing after `await` may or may not have access to global objects like `HttpContext`, or `SynchronizationContext.Current` may not be on the UI thread of a WPF application.
+
+`ConfigureAwait` takes a boolean value of `true` or `false`:
+* `ConfigureAwait(true)` will cause the awaitable capture the context. This is the default behavior; ConfigureAwait(true)` is rarely used.
+* `ConfigureAwait(false)` will cause the awaitable to not capture the context.
+
+Prefer `ConfigureAwait(false)` over the default behavior. Like `CancellationTokens`, this could be considered a cooperative effort.
+By not capturing the thread context or scheduler, less memory is used, and fewer CPU cycles are used when continuations runs.
+It also frees the application from having to run continuations through a `SynchronizationContext`.
+
+
+:bulb:**NOTE By using `ConfigureAwait(false)`, code following these `await` statements cannot access certain global objects like `HttpContext`. The compiler will not catch this, but using them will result in a `NullReferenceException` during runtime.
+
+:bulb:**NOTE ASP.NET Core does not have a `SynchronizationContext` and does not have this problem.
+
+:bulb:**NOTE Some advice states to use `ContinueAwait(false)` to avoid deadlocks. This is mistaken advice and does [not guarantee against deadlocks](https://blog.stephencleary.com/2012/07/dont-block-on-async-code.html).
+
+❌ **BAD** This example uses a global object and throws a `NullReferenceException` during runtime.
+
+```C#
+public async Task<string> Get(int id)
+{
+    HttpResponseMessage result;
+    using(var client = new HttpClient())
+    {
+        result = await client.GetAsync("http://example.org").ConfigureAwait(false);
+    }
+    
+    var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+    
+    // HttpContext is null
+    var username = HttpContext.Current.Session["username"];
+    
+    return $"{username}, your requested content is {content}";
+}
+```
+
+:white_check_mark: **GOOD** This example avoids the `NullReferenceException` by moving the `HttpContext` access above the `await` calls.
+
+```C#
+public async Task<string> Get(int id)
+{
+    // HttpContext is not null because no awaits with ConfigureAwait(false) have executed
+    var username = HttpContext.Current.Session["username"];
+
+    HttpResponseMessage result;
+    using(var client = new HttpClient())
+    {
+        result = await client.GetAsync("http://example.org").ConfigureAwait(false);
+    }
+    
+    var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+    
+    
+    return $"{username}, your requested content is {content}";
+}
+```
+
+:white_check_mark: **GOOD** This example avoids the `NullReferenceException` by not using `ConfigureAwait(false)`
+
+```C#
+public async Task<string> Get(int id)
+{
+    HttpResponseMessage result;
+    using(var client = new HttpClient())
+    {
+        result = await client.GetAsync("http://example.org");
+    }
+    
+    var content = await result.Content.ReadAsStringAsync();
+    
+    // HttpContext is null
+    var username = HttpContext.Current.Session["username"];
+    
+    return $"{username}, your requested content is {content}";
+}
+```
 # Scenarios
 
 The above tries to distill general guidance, but doesn't do justice to the kinds of real-world situations that cause code like this to be written in the first place (bad code). This section tries to take concrete examples from real applications and turn them into something simple to help you relate these problems to existing codebases.

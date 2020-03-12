@@ -646,7 +646,6 @@ public async Task<string> Get(int id)
     
     var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
     
-    
     return $"{username}, your requested content is {content}";
 }
 ```

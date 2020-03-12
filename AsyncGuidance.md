@@ -593,7 +593,7 @@ public async Task<int> DoSomethingAsync()
 
 ## ConfigureAwait
 
-`ConfigureAwait` changes whether the original thread context or thread scheduler is used when resuming the a method after `await`.
+`ConfigureAwait` changes whether the original thread context or thread scheduler is used when resuming a method after `await`.
 
 In practice, this means that code executing after `await` may or may not have access to global objects like `HttpContext`, or `SynchronizationContext.Current` may not be on the UI thread of a WPF application.
 
@@ -605,8 +605,6 @@ Prefer `ConfigureAwait(false)` over the default behavior. Like `CancellationToke
 By not capturing the thread context or scheduler, less memory is used, and fewer CPU cycles are used when continuations runs.
 It also frees the application from having to run continuations through a `SynchronizationContext`.
 
-
-:bulb:**NOTE By using `ConfigureAwait(false)`, code following `await` statements cannot access certain global objects like `HttpContext`. The compiler will not catch this, but using them will result in a `NullReferenceException` during runtime.**
 
 :bulb:**NOTE ASP.NET Core does not have a `SynchronizationContext` and does not have this problem.**
 
@@ -653,7 +651,7 @@ public async Task<string> Get(int id)
 }
 ```
 
-:white_check_mark: **GOOD** This example avoids the `NullReferenceException` by not using `ConfigureAwait(false)`
+:white_check_mark: **GOOD** This example avoids the `NullReferenceException` by not using `ConfigureAwait(false)`.
 
 ```C#
 public async Task<string> Get(int id)

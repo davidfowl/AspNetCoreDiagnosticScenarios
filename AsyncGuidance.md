@@ -877,4 +877,13 @@ public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeA
 }
 ```
 
-:bulb:**NOTE There's no good alternative here. This API shouldn't be used with an asynchronous callback. See https://github.com/dotnet/corefx/issues/24977**
+:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case).
+
+```C#
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+{
+    return await WindowsIdentity.RunImpersonated(
+        safeAccessTokenHandle, 
+        context => _db.QueryAsync("SELECT Name from Products"));
+}
+```

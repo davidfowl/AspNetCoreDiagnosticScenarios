@@ -49,5 +49,12 @@ namespace Scenarios.Controllers
             var obj = await _pokemonService.GetPokemonManualBufferedAsync();
             return Ok(obj);
         }
+
+        [HttpGet("/big-json-content-6")]
+        public async Task<IActionResult> BigContentJsonNewJson()
+        {
+            var obj = await _pokemonService.GetPokemonAsyncNewJson();
+            return Ok(obj);
+        }
     }
 }

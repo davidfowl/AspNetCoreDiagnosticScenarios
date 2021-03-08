@@ -848,7 +848,7 @@ public class Service : IService
 
 ## WindowsIdentity.RunImpersonated
 
-This API runs the specified action as the impersonated Windows identity. Unfortunately there's no asynchronous version of the callback.
+This API runs the specified action as the impersonated Windows identity. An [asynchronous version of the callback](https://docs.microsoft.com/en-us/dotnet/api/system.security.principal.windowsidentity.runimpersonatedasync) was introduced in .NET 5.0.
 
 ❌ **BAD** This example tries to execute the query asynchronously, and then wait for it outside of the call to `RunImpersonated`. This will throw because the query might be executing outside of the impersonation context.
 
@@ -877,12 +877,23 @@ public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeA
 }
 ```
 
-:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case).
+:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case). It is the recommended practice in framewroks earlier than .NET 5.0.
 
 ```C#
 public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
 {
     return await WindowsIdentity.RunImpersonated(
+        safeAccessTokenHandle, 
+        context => _db.QueryAsync("SELECT Name from Products"));
+}
+```
+
+:white_check_mark: **GOOD** This example uses the asynchronous `RunImparsonatedAsync` function and awaits its result. It is available in .NET 5.0 or newer.
+
+```C#
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+{
+    return await WindowsIdentity.RunImpersonatedAsync(
         safeAccessTokenHandle, 
         context => _db.QueryAsync("SELECT Name from Products"));
 }

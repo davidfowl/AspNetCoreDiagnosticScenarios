@@ -9,7 +9,10 @@
 
 ## Different Platform Implementations
 
-`HttpClient` is a wrapper API around an `HttpMessageHandler`. The most inner `HttpMessageHandler` is the one that's responsible for making the HTTP request.
+`HttpClient` is a wrapper API around an `HttpMessageHandler`. The most inner `HttpMessageHandler` is the one that's responsible for making the HTTP request. There are several implementations on various .NET platforms. This document is focused on server applications and will focus on 2-3 main implementations:
+- HttpClientHandler/WebRequestHandler on .NET Framework
+- SocketHttpHandler on .NET Core/5
+- WinHttpHandler on .NET Framework or .NET Core/5 (runs on both but is Windows specific)
 
 ## A note about WebClient
 

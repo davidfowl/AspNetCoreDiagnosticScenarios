@@ -740,7 +740,7 @@ public class PersonController : Controller
 
 :white_check_mark: **GOOD** This implementation won't result in thread-pool starvation since we're storing a task instead of the result itself.
 
-:warning: `ConcurrentDictionary.GetOrAdd` will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations multiple times.
+:warning: `ConcurrentDictionary.GetOrAdd`, when accessed concurrently, may run the value-constructing delegate multiple times. This can result in needlessly kicking off the same potentially expensive computation multiple times.
 
 ```C#
 public class PersonController : Controller
@@ -763,7 +763,7 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** This implementation fixes the multiple-executing callback issue by using the `async` lazy pattern.
+:white_check_mark: **GOOD** This implementation prevents the delegate from being executed multiple times, by using the `async` lazy pattern: even if construction of the AsyncLazy instance happens multiple times ("cheap" operation), the delegate will be called only once.
 
 ```C#
 public class PersonController : Controller
@@ -869,7 +869,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessToken
 ❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
 
 ```C#
-public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+public IEnumerable<Product> GetDataImpersonated(SafeAccessTokenHandle safeAccessTokenHandle)
 {
     return WindowsIdentity.RunImpersonated(
         safeAccessTokenHandle,

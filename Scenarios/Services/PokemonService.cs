@@ -78,7 +78,7 @@ namespace Scenarios.Services
 
                 var serializer = new JsonSerializer();
 
-                // This asynchronously reads the JSON object into memory. This does true synchronous IO. The only downside is that we're
+                // This asynchronously reads the JSON object into memory. This does true asynchronous IO. The only downside is that we're
                 // converting the object graph to an intermediate DOM before going to the object directly.
                 var obj = await JToken.ReadFromAsync(reader);
 

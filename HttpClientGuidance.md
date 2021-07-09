@@ -16,7 +16,7 @@
 
 ## A note about WebClient
 
-WebClient is considered a legacy .NET API at this point and has been completely superseded by HttpClient. No new code should be written with HttpClient.
+WebClient is considered a legacy .NET API at this point and has been completely superseded by HttpClient. New code should be written with HttpClient.
 
 ❌ **BAD** This example uses the legacy WebClient to make a synchronous HTTP request.
 

@@ -738,6 +738,8 @@ public class PersonController : Controller
 }
 ```
 
+:bulb: **NOTE:** Using `ValueTask<T>` removes an allocation as most times we'd return the value from the cache.
+
 :white_check_mark: **GOOD** This implementation won't result in thread-pool starvation since we're storing a task instead of the result itself.
 
 :warning: `ConcurrentDictionary.GetOrAdd`, when accessed concurrently, may run the value-constructing delegate multiple times. This can result in needlessly kicking off the same potentially expensive computation multiple times.
@@ -755,7 +757,7 @@ public class PersonController : Controller
       _db = db;
    }
    
-   public async Task<IActionResult> Get(int id)
+   public async ValueTask<IActionResult> Get(int id)
    {
        var person = await _cache.GetOrAdd(id, (key) => _db.People.FindAsync(key));
        return Ok(person);
@@ -778,7 +780,7 @@ public class PersonController : Controller
       _db = db;
    }
    
-   public async Task<IActionResult> Get(int id)
+   public async ValueTask<IActionResult> Get(int id)
    {
        var person = await _cache.GetOrAdd(id, (key) => new AsyncLazy<Person>(() => _db.People.FindAsync(key))).Value;
        return Ok(person);

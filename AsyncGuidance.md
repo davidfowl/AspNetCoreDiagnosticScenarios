@@ -888,7 +888,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessToken
 }
 ```
 
-:white_check_mark: **GOOD** This example uses the asynchronous `RunImparsonatedAsync` function and awaits its result. It is available in .NET 5.0 or newer.
+:white_check_mark: **GOOD** This example uses the asynchronous `RunImpersonatedAsync` function and awaits its result. It is available in .NET 5.0 or newer.
 
 ```C#
 public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)

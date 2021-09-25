@@ -570,6 +570,7 @@ There are benefits to using the `async`/`await` keyword instead of directly retu
 - The code is easier to modify (consider adding a `using`, for example).
 - Diagnostics of asynchronous methods are easier (debugging hangs etc).
 - Exceptions thrown will be automatically wrapped in the returned `Task` instead of surprising the caller with an actual exception.
+- Async locals will not leak out of async methods. If you set an async local in a non-async method, it will "leak" out of that call.
 
 ❌ **BAD** This example directly returns the `Task` to the caller.
 

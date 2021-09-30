@@ -250,14 +250,14 @@ public string DoOperationBlocking2()
 
 public string DoOperationBlocking3()
 {
-    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
+    // Bad - Blocking the thread that enters, and blocking the threadpool thread inside.
     // In the case of an exception, this method will throw an AggregateException containing another AggregateException, containing the original exception.
     return Task.Run(() => DoAsyncOperation().Result).Result;
 }
 
 public string DoOperationBlocking4()
 {
-    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
+    // Bad - Blocking the thread that enters, and blocking the threadpool thread inside.
     return Task.Run(() => DoAsyncOperation().GetAwaiter().GetResult()).GetAwaiter().GetResult();
 }
 
@@ -472,7 +472,7 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 
 ### Using a timeout
 
-❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers, which can flood the timer queue. 
+❌ **BAD** This example does not cancel the timer even if the operation successfully completes. This means you could end up with lots of timers, which can flood the timer queue. 
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -490,7 +490,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
-:white_check_mark: **GOOD** This example cancels the timer if the operation succesfully completes.
+:white_check_mark: **GOOD** This example cancels the timer if the operation successfully completes.
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -878,7 +878,7 @@ public IEnumerable<Product> GetDataImpersonated(SafeAccessTokenHandle safeAccess
 }
 ```
 
-:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case). It is the recommended practice in framewroks earlier than .NET 5.0.
+:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case). It is the recommended practice in frameworks earlier than .NET 5.0.
 
 ```C#
 public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)

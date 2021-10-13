@@ -33,8 +33,8 @@ public string DoSomethingAsync()
 ```C#
 static readonly HttpClient client = new HttpClient();
 
-public Task<string> DoSomethingAsync()
+public async Task<string> DoSomethingAsync()
 {
-    return client.GetStringAsync("http://www.google.com");
+    return await client.GetStringAsync("http://www.google.com");
 }
 ```

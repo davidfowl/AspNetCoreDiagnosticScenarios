@@ -33,5 +33,16 @@ namespace Scenarios.Controllers
                 return await client.GetStreamAsync(_url);
             }
         }
+
+        [Route("/httpclient-4")]
+        public async Task OutgoingGoodManul([FromServices] IHttpClientFactory clientFactory)
+        {
+            using (var client = clientFactory.CreateClient())
+            {
+                var stream = await client.GetStreamAsync(_url);
+
+                await stream.CopyToAsync(Response.Body);
+            }
+        }
     }
 }

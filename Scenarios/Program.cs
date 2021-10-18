@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -26,7 +27,16 @@ namespace Scenarios
                 })
                 .ConfigureWebHostDefaults(builder =>
                 {
-                    builder.UseStartup<Startup>();
+                    builder.UseStartup<Startup>()
+                           .ConfigureKestrel(o =>
+                           {
+                               o.Limits.MinRequestBodyDataRate = null;
+
+                               o.ConfigureHttpsDefaults(https =>
+                               {
+                                   https.HandshakeTimeout = TimeSpan.FromDays(1);
+                               });
+                           });
                 });
     }
 }

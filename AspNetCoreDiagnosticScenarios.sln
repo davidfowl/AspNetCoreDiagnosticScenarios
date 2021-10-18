@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2036
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31814.306
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scenarios", "Scenarios\Scenarios.csproj", "{D05E3242-E5ED-493F-B75D-48A494C6CE4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlowClient", "SlowClient\SlowClient.csproj", "{1A8B00A7-4EBD-4F72-AC64-AC0D4C16DA43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D05E3242-E5ED-493F-B75D-48A494C6CE4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D05E3242-E5ED-493F-B75D-48A494C6CE4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D05E3242-E5ED-493F-B75D-48A494C6CE4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8B00A7-4EBD-4F72-AC64-AC0D4C16DA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A8B00A7-4EBD-4F72-AC64-AC0D4C16DA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A8B00A7-4EBD-4F72-AC64-AC0D4C16DA43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A8B00A7-4EBD-4F72-AC64-AC0D4C16DA43}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

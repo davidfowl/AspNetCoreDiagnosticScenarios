@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
@@ -19,6 +20,9 @@ namespace Scenarios.Controllers
         [HttpPost("/big-json-input-1")]
         public IActionResult BigJsonSynchronousInput()
         {
+            // Allow sync IO
+            HttpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+
             // This synchronously reads the entire http request body into memory and it has several problems:
             // 1. If the request is large it could lead to out of memory problems which can result in a Denial Of Service.
             // 2. If the client is slowly uploading, we're doing sync over async because Kestrel does *NOT* support synchronous reads.

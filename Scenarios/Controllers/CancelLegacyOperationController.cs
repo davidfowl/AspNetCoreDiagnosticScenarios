@@ -49,5 +49,16 @@ namespace Scenarios.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("/legacy-cancellation-5")]
+        public async Task<IActionResult> LegacyCancellationWithCancellationNewMethod()
+        {
+            var service = new LegacyService();
+
+            // This method is built into .NET 6!
+            var result = await service.DoAsyncOperation().WaitAsync(HttpContext.RequestAborted);
+
+            return Ok(result);
+        }
     }
 }

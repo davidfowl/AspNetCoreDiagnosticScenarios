@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -25,7 +26,7 @@ namespace Scenarios.Services
             _client = client;
         }
 
-        public async Task<PokemonData> GetPokemonBufferdStringAsync()
+        public async Task<PokemonData> GetPokemonBufferedStringAsync()
         {
             // This service returns the entire JSON payload into memory before converting that into a JSON object
             var json = await _client.GetStringAsync(_url);
@@ -109,6 +110,14 @@ namespace Scenarios.Services
         }
 
         public async Task<PokemonData> GetPokemonAsyncNewJson()
+        {
+            using var response = await _client.GetAsync(_url, HttpCompletionOption.ResponseHeadersRead);
+
+            // Get the response stream
+            return await response.Content.ReadFromJsonAsync<PokemonData>();
+        }
+
+        public async Task<PokemonData> GetPokemonAsyncNewJsonManual()
         {
             using var response = await _client.GetAsync(_url, HttpCompletionOption.ResponseHeadersRead);
 

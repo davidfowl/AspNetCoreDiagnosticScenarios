@@ -245,6 +245,7 @@ public string DoOperationBlocking2()
 {
     // Bad - Blocking the thread that enters.
     // DoAsyncOperation will be scheduled on the default task scheduler, and remove the risk of deadlocking.
+    // In the case of an exception, this method will throw the exception without wrapping it in an AggregateException.
     return Task.Run(() => DoAsyncOperation()).GetAwaiter().GetResult();
 }
 

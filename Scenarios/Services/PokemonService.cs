@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -125,6 +126,12 @@ namespace Scenarios.Services
             var responseStream = await response.Content.ReadAsStreamAsync();
 
             return await System.Text.Json.JsonSerializer.DeserializeAsync<PokemonData>(responseStream);
+        }
+
+        public async Task<PokemonData> GetPokemonAsyncSlow()
+        {
+            await Task.Delay(Random.Shared.Next(20, 500));
+            return await GetPokemonAsync();
         }
     }
 }

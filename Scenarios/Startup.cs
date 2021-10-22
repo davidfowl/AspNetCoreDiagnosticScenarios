@@ -48,6 +48,8 @@ namespace Scenarios
             services.AddSingleton<RemoteConnectionFactory>();
 
             services.AddControllers();
+
+            services.AddMemoryCache();
         }
 
         private async Task<LoggingRemoteConnection> GetLoggingRemoteConnection(IServiceProvider sp)

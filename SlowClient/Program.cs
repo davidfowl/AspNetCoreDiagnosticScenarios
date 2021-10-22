@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Net;
 
-var numRequests = int.Parse(args[0]);
-var url = args[1];
+(int numRequests, string url) = args switch
+{
+    { Length: 2 } => (int.Parse(args[0]), args[1]),
+    _ => throw new InvalidOperationException($"Missing arguments: {Path.GetFileName(Environment.ProcessPath)} [numberOfRequests] [url]")
+};
 
 var client = new HttpClient(new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromDays(1) })
 {

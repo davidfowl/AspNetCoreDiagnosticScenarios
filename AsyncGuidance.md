@@ -667,7 +667,7 @@ public class Pinger
 
     private async Task DoAsyncPing()
     {
-        await _client.GetAsync("http://mybackend/api/ping");
+        await _client.GetAsync("http://mybackend/api/ping").ConfigureAwait(false);
     }
 }
 ```

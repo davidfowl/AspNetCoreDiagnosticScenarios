@@ -750,7 +750,7 @@ public class PersonController : Controller
    private AppDbContext _db;
    
    // This cache needs expiration
-   private static ConcurrentDictionary<int, Task<Person>> _cache = new ConcurrentDictionary<int, Task<Person>>();
+   private static ConcurrentDictionary<int, ValueTask<Person>> _cache = new ConcurrentDictionary<int, ValueTask<Person>>();
    
    public PersonController(AppDbContext db)
    {
@@ -786,9 +786,9 @@ public class PersonController : Controller
        return Ok(person);
    }
    
-   private class AsyncLazy<T> : Lazy<Task<T>>
+   private class AsyncLazy<T> : Lazy<ValueTask<T>>
    {
-      public AsyncLazy(Func<Task<T>> valueFactory) : base(valueFactory)
+      public AsyncLazy(Func<ValueTask<T>> valueFactory) : base(valueFactory)
       {
       }
    }

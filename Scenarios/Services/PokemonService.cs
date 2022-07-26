@@ -78,7 +78,7 @@ namespace Scenarios.Services
 
                 var serializer = new JsonSerializer();
 
-                // This asynchronously reads the JSON object into memory. This does true synchronous IO. The only downside is that we're
+                // This asynchronously reads the JSON object into memory. This does true asynchronous IO. The only downside is that we're
                 // converting the object graph to an intermediate DOM before going to the object directly.
                 var obj = await JToken.ReadFromAsync(reader);
 
@@ -106,6 +106,16 @@ namespace Scenarios.Services
                 // Because we're buffering the entire response, we're also avoiding synchronous IO
                 return serializer.Deserialize<PokemonData>(reader);
             }
+        }
+
+        public async Task<PokemonData> GetPokemonAsyncNewJson()
+        {
+            using var response = await _client.GetAsync(_url, HttpCompletionOption.ResponseHeadersRead);
+
+            // Get the response stream
+            var responseStream = await response.Content.ReadAsStreamAsync();
+
+            return await System.Text.Json.JsonSerializer.DeserializeAsync<PokemonData>(responseStream);
         }
     }
 }

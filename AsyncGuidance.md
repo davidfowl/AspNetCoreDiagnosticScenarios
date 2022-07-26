@@ -245,19 +245,20 @@ public string DoOperationBlocking2()
 {
     // Bad - Blocking the thread that enters.
     // DoAsyncOperation will be scheduled on the default task scheduler, and remove the risk of deadlocking.
+    // In the case of an exception, this method will throw the exception without wrapping it in an AggregateException.
     return Task.Run(() => DoAsyncOperation()).GetAwaiter().GetResult();
 }
 
 public string DoOperationBlocking3()
 {
-    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
+    // Bad - Blocking the thread that enters, and blocking the threadpool thread inside.
     // In the case of an exception, this method will throw an AggregateException containing another AggregateException, containing the original exception.
     return Task.Run(() => DoAsyncOperation().Result).Result;
 }
 
 public string DoOperationBlocking4()
 {
-    // Bad - Blocking the thread that enters, and blocking the theadpool thread inside.
+    // Bad - Blocking the thread that enters, and blocking the threadpool thread inside.
     return Task.Run(() => DoAsyncOperation().GetAwaiter().GetResult()).GetAwaiter().GetResult();
 }
 
@@ -472,7 +473,7 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 
 ### Using a timeout
 
-❌ **BAD** This example does not cancel the timer even if the operation successfuly completes. This means you could end up with lots of timers, which can flood the timer queue. 
+❌ **BAD** This example does not cancel the timer even if the operation successfully completes. This means you could end up with lots of timers, which can flood the timer queue. 
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -490,7 +491,7 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
 }
 ```
 
-:white_check_mark: **GOOD** This example cancels the timer if the operation succesfully completes.
+:white_check_mark: **GOOD** This example cancels the timer if the operation successfully completes.
 
 ```C#
 public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
@@ -570,6 +571,7 @@ There are benefits to using the `async`/`await` keyword instead of directly retu
 - The code is easier to modify (consider adding a `using`, for example).
 - Diagnostics of asynchronous methods are easier (debugging hangs etc).
 - Exceptions thrown will be automatically wrapped in the returned `Task` instead of surprising the caller with an actual exception.
+- Async locals will not leak out of async methods. If you set an async local in a non-async method, it will "leak" out of that call.
 
 ❌ **BAD** This example directly returns the `Task` to the caller.
 
@@ -814,7 +816,7 @@ public class PersonController : Controller
 
 :white_check_mark: **GOOD** This implementation won't result in thread-pool starvation since we're storing a task instead of the result itself.
 
-:warning: `ConcurrentDictionary.GetOrAdd` will potentially run the cache callback multiple times in parallel. This can result in kicking off expensive computations multiple times.
+:warning: `ConcurrentDictionary.GetOrAdd`, when accessed concurrently, may run the value-constructing delegate multiple times. This can result in needlessly kicking off the same potentially expensive computation multiple times.
 
 ```C#
 public class PersonController : Controller
@@ -837,7 +839,7 @@ public class PersonController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** This implementation fixes the multiple-executing callback issue by using the `async` lazy pattern.
+:white_check_mark: **GOOD** This implementation prevents the delegate from being executed multiple times, by using the `async` lazy pattern: even if construction of the AsyncLazy instance happens multiple times ("cheap" operation), the delegate will be called only once.
 
 ```C#
 public class PersonController : Controller
@@ -922,7 +924,7 @@ public class Service : IService
 
 ## WindowsIdentity.RunImpersonated
 
-This API runs the specified action as the impersonated Windows identity. Unfortunately there's no asynchronous version of the callback.
+This API runs the specified action as the impersonated Windows identity. An [asynchronous version of the callback](https://docs.microsoft.com/en-us/dotnet/api/system.security.principal.windowsidentity.runimpersonatedasync) was introduced in .NET 5.0.
 
 ❌ **BAD** This example tries to execute the query asynchronously, and then wait for it outside of the call to `RunImpersonated`. This will throw because the query might be executing outside of the impersonation context.
 
@@ -943,7 +945,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessToken
 ❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
 
 ```C#
-public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+public IEnumerable<Product> GetDataImpersonated(SafeAccessTokenHandle safeAccessTokenHandle)
 {
     return WindowsIdentity.RunImpersonated(
         safeAccessTokenHandle,
@@ -951,4 +953,24 @@ public IEnumerable<Product> GetDataImpersonatedAsync(SafeAccessTokenHandle safeA
 }
 ```
 
-:bulb:**NOTE There's no good alternative here. This API shouldn't be used with an asynchronous callback. See https://github.com/dotnet/corefx/issues/24977**
+:white_check_mark: **GOOD** This example awaits the result of `RunImpersonated` (the delegate is `Func<Task<IEnumerable<Product>>>` in this case). It is the recommended practice in frameworks earlier than .NET 5.0.
+
+```C#
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+{
+    return await WindowsIdentity.RunImpersonated(
+        safeAccessTokenHandle, 
+        context => _db.QueryAsync("SELECT Name from Products"));
+}
+```
+
+:white_check_mark: **GOOD** This example uses the asynchronous `RunImpersonatedAsync` function and awaits its result. It is available in .NET 5.0 or newer.
+
+```C#
+public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessTokenHandle safeAccessTokenHandle)
+{
+    return await WindowsIdentity.RunImpersonatedAsync(
+        safeAccessTokenHandle, 
+        context => _db.QueryAsync("SELECT Name from Products"));
+}
+```

@@ -602,10 +602,10 @@ Async locals are a way to store/retrieve ambient state throughout an application
 
 If you can avoid async locals, do so by explicitly passing state around or using techniques like inversion of control.
 
-If you cannot avoid it, it's best to make sure that anything put into an async local:
+If you cannot avoid it, it's best to make sure that anything put into an async local is:
 
-1. Is not disposable
-2. Is Immutable/read only/thread safe
+1. Not disposable
+2. Immutable/read only/thread safe
 
 Lets look at 2 examples:
 

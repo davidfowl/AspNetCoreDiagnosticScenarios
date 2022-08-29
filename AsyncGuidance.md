@@ -846,7 +846,7 @@ Async locals flow across awaits automatically and can be captured by any API tha
 
 #### Common APIs that capture the ExecutionContext
 
-APIs that run user callbacks usually store capture the current execution context in order to preserve async locals between callback registration and execution. Here are examples of some APIs that do this:
+APIs that run user callbacks usually capture the current execution context in order to preserve async locals between callback registration and execution. Here are examples of some APIs that do this:
 
 - `Timer`
 - `CancellationToken.Register`

@@ -932,7 +932,9 @@ class ChunkyObject
 }
 ```
 
-The above example has a singleton `NumberCache` that stores numbers for an hour. We have a `ChunkyObject` which stores a 32K string in a field and has an async local so that any code running may access the current `ChunkyObject`. This object should be collected when the `GC` runs but instead we're implicitly capturing the `ChunkyObject` in the `NumberCache` via `CancellationToken.Register`. Instead of just caching the number and a `CancellationTokenSource`, we're implicitly capturing and storing all async locals attached to the current execution context for an hour!
+The above example has a singleton `NumberCache` that stores numbers for an hour. We have a `ChunkyObject` which stores a 32K string in a field, and has an async local so that any code running may access the current `ChunkyObject`. This object should be collected when the `GC` runs, but instead, we're implicitly capturing the `ChunkyObject` in the `NumberCache` via `CancellationToken.Register`. 
+
+**Instead of just caching the number and a `CancellationTokenSource`, we're implicitly capturing and storing all async locals attached to the current execution context for an hour!**
 
 Try running the sample locally. Running this on my machine reports numbers like this:
 

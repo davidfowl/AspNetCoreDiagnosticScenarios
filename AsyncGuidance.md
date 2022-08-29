@@ -842,8 +842,7 @@ class AmbientValues
 
 ### Don't leak your AsyncLocal\<T\>
 
-Async locals flow across awaits automatically or can be captured by any API that explicitly calls `ExecutionContext.Capture`. The latter can lead to memory leaks if the lifetime of the API capturing the execution context is incompatible with the lifetime of the data stored in the async local.
-
+Async locals flow across awaits automatically and can be captured by any API that explicitly calls `ExecutionContext.Capture`. The latter can lead to memory leaks if the lifetime of the API capturing the execution context is incompatible with the lifetime of the data stored in the async local.
 
 #### Common APIs that capture the ExecutionContext
 
@@ -915,7 +914,6 @@ public class NumberCache
         cts.CancelAfter(_timeSpan);
     }
 }
-
 
 class ChunkyObject
 {

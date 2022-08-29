@@ -940,7 +940,6 @@ Try running the sample locally. Running this on my machine reports numbers like 
 
 ```
 Before GC: 654.65 MB
-
 After GC: 659.68 MB
 ```
 
@@ -975,7 +974,6 @@ The GC numbers after this change:
 
 ```C#
 Before GC: 10.32 MB
-
 After GC: 5.10 MB
 ```
 

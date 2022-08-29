@@ -596,15 +596,14 @@ public async Task<int> DoSomethingAsync()
 
 ## AsyncLocal\<T\>
 
-Async locals are a way to store/retrieve ambient state throughout an application. This can be a *very* useful alternative to flowing explicit state everywhere, especially through call sites that you do not have much control over. While it is powerful it is also dangerous if used incorrectly. Async locals are attached to the execution context, which flows *everywhere implicitly* by default. Disabling execution context flow requires use of advanced APIs (typically prefixed with the Unsafe name). As such, there's very little control over what will attempt to access these values. 
+Async locals are a way to store/retrieve ambient state throughout an application. This can be a *very* useful alternative to flowing explicit state everywhere, especially through call sites that you do not have much control over. While it is powerful, it is also dangerous if used incorrectly. Async locals are attached to the execution context which flows *everywhere implicitly*. Disabling execution context flow requires use of advanced APIs (typically prefixed with the Unsafe name). As such, there's very little control over what code will attempt to access these values. 
 
-If you can avoid async locals, do so, explicitly passing state around or using techniques like inversion of control might be better alternatives to flowing state around an application.
+If you can avoid async locals, do so by explicitly passing state around or using techniques like inversion of control.
 
 If you cannot avoid it, it's best to make sure that anything put into an async local is:
 
 1. Not disposable
 2. Immutable/read only/thread safe
-
 
 Lets look at 2 examples:
 
@@ -756,7 +755,7 @@ DisposableThing.Current = null;
 Console.WriteLine("After setting Current to null " + ExecutionContext.Capture().GetHashCode());
 ```
 
-⚠️ While this looks attractive, the reference to Current might have still been captured before the value was set to null:
+⚠️ While this looks attractive, the reference to `DisposableThing.Current` might have still been captured before the value was set to null:
 
 ```C#
 void Dispatch()
@@ -787,7 +786,7 @@ void Log(DisposableThing thing)
 }
 ```
 
-There's a race condition between the capture of the `DisposableThing`, the disposal of `DisposableThing` and setting `DisposableThing.Current` it to null. In the end, the code is unreliable and may fail at random.
+There's a race condition between the capture of the `DisposableThing`, the disposal of `DisposableThing` and setting `DisposableThing.Current` it to null. In the end, the code is unreliable and may fail at random. Don't store disposable objects in async locals.
 
 
 2. ❌ A non-thread safe object stored in an async local

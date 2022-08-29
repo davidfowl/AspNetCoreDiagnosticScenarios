@@ -605,7 +605,7 @@ If you can avoid async locals, do so by explicitly passing state around or using
 If you cannot avoid it, it's best to make sure that anything put into an async local:
 
 1. Is not disposable
-2. Immutable/read only/thread safe
+2. Is Immutable/read only/thread safe
 
 Lets look at 2 examples:
 

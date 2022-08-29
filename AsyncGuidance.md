@@ -842,7 +842,7 @@ class AmbientValues
 
 ### Don't leak your AsyncLocal\<T\>
 
-Async locals flow across awaits automatically and can be captured by any API that explicitly calls `ExecutionContext.Capture`. The latter can lead to memory leaks if the lifetime of the API capturing the execution context is incompatible with the lifetime of the data stored in the async local.
+Async locals flow across awaits automatically and can be captured by any API that explicitly calls `ExecutionContext.Capture`. The latter can lead to memory leaks in certain situations.
 
 #### Common APIs that capture the ExecutionContext
 
@@ -855,7 +855,7 @@ APIs that run user callbacks usually store capture the current execution context
 - `Task.Run`
 - `ThreadPool.QueueUserWorkItem`
 
-❌ Here's an example of an execution context leak that causes memory pressure.
+❌ Here's an example of an execution context leak that causes memory pressure because of a lifetime mismatch between the API capturing the execution context and the lifetime of the data stored in the async local.
 
 ```C#
 using System.Collections.Concurrent;

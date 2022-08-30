@@ -12,6 +12,7 @@
    - [Cancelling uncancellable operations](#cancelling-uncancellable-operations)
    - [Always call FlushAsync on StreamWriter(s) or Stream(s) before calling Dispose](#always-call-flushasync-on-streamwriters-or-streams-before-calling-dispose)
    - [Prefer async/await over directly returning Task](#prefer-asyncawait-over-directly-returning-task)
+   - [AsyncLocal\<T\>](#asynclocalt)
    - [ConfigureAwait](#configureawait)
  - [Scenarios](#scenarios)
    - [Timer callbacks](#timer-callbacks)
@@ -593,6 +594,390 @@ public async Task<int> DoSomethingAsync()
 
 :bulb:**NOTE: There are performance considerations when using an async state machine over directly returning the `Task`. It's always faster to directly return the `Task` since it does less work but you end up changing the behavior and potentially losing some of the benefits of the async state machine.**
 
+## AsyncLocal\<T\>
+
+Async locals are a way to store/retrieve ambient state throughout an application. This can be a *very* useful alternative to flowing explicit state everywhere, especially through call sites that you do not have much control over. While it is powerful, it is also dangerous if used incorrectly. Async locals are attached to the [execution context](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext) which flows *everywhere implicitly*. Disabling execution context flow requires use of advanced APIs (typically prefixed with the Unsafe name). As such, there's very little control over what code will attempt to access these values. 
+
+### Creating an AsyncLocal\<T\>
+
+If you can avoid async locals, do so by explicitly passing state around or using techniques like inversion of control.
+
+If you cannot avoid it, it's best to make sure that anything put into an async local is:
+
+1. Not disposable
+2. Immutable/read only/thread safe
+
+Lets look at 2 examples:
+
+1. ❌ A disposable object stored in an async local
+
+```C#
+using (var thing = new DisposableThing())
+{
+    // Make the disposable object available ambiently
+    DisposableThing.Current = thing;
+
+    Dispatch();
+
+    // We're about the dispose the object so make sure nobody else captures this instance
+    DisposableThing.Current = null;
+}
+
+void Dispatch()
+{
+    // Task.Run will capture the current execution context (which means async locals are captured in the callback)
+    _ = Task.Run(async () =>
+    {
+        // Delay for a second then log
+        await Task.Delay(1000);
+
+        Log();
+    });
+}
+
+void Log()
+{
+    try
+    {
+        // Get the current value and make sure it's not null before reading the value
+        var thing = DisposableThing.Current;
+        if (thing is not null)
+        {
+            Console.WriteLine($"Logging ambient value {thing.Value}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex);
+    }
+}
+
+Console.ReadLine();
+
+class DisposableThing : IDisposable
+{
+    private static readonly AsyncLocal<DisposableThing?> _current = new();
+
+    private bool _disposed;
+
+    public static DisposableThing? Current
+    {
+        get => _current.Value;
+        set
+        {
+            _current.Value = value;
+        }
+    }
+
+    public int Value
+    {
+        get
+        {
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
+            return 1;
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+    }
+}
+```
+
+This above example will always result in an `ObjectDisposedException` being thrown. Even though the `Log` method defensively checks for null before logging the value, it has a reference to the disposed `DisposableThing`. Setting the `AsyncLocal<DisposableThing>` to null does not affect the code inside of `Log`, this is because the execution context is copy on write.
+
+When we set `DisposableThing.Current = null;` we are making a new execution context, not mutating the one that was captured by `Task.Run`. To get a better understanding of this run the following code:
+
+```C#
+DisposableThing.Current = new DisposableThing();
+
+Console.WriteLine("After setting thing " + ExecutionContext.Capture().GetHashCode());
+
+DisposableThing.Current = null;
+
+Console.WriteLine("After setting Current to null " + ExecutionContext.Capture().GetHashCode());
+```
+
+The hash code of the execution context is different each time we set a new value.
+
+⚠️ It might be tempting to update the logic in `DisposableThing.Current` to mutate the original execution context instead of setting the async local directly ([StrongBox\<T\>](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.strongbox-1) is a reference type that stores the underlying T in a mutable field):
+
+```C#
+class DisposableThing : IDisposable
+{
+    private static readonly AsyncLocal<StrongBox<DisposableThing?>> _current = new();
+
+    private bool _disposed;
+
+    public static DisposableThing? Current
+    {
+        get => _current.Value?.Value;
+        set
+        {
+            var box = _current.Value;
+            if (box is not null)
+            {
+                // Mutate the value in any execution context that was copied
+                box.Value = null;
+            }
+
+            if (value is not null)
+            {
+                _current.Value = new StrongBox<DisposableThing?>(value);
+            }
+        }
+    }
+
+    public int Value
+    {
+        get
+        {
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
+            return 1;
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+    }
+}
+```
+
+This will have the desired effect and will set the value to null in any execution context that references this async local value.
+
+```C#
+DisposableThing.Current = new DisposableThing();
+
+Console.WriteLine("After setting thing " + ExecutionContext.Capture().GetHashCode());
+
+DisposableThing.Current = null;
+
+Console.WriteLine("After setting Current to null " + ExecutionContext.Capture().GetHashCode());
+```
+
+⚠️ While this looks attractive, the reference to `DisposableThing.Current` might have still been captured before the value was set to null:
+
+```C#
+void Dispatch()
+{
+    // Task.Run will capture the current execution context (which means async locals are captured in the callback)
+    _ = Task.Run(async () =>
+    {
+        // Get the current reference
+        var current = DisposableThing.Current;
+
+        // Delay for a second then log
+        await Task.Delay(1000);
+
+        Log(current);
+    });
+}
+
+void Log(DisposableThing thing)
+{
+    try
+    {
+        Console.WriteLine($"Logging ambient value {thing.Value}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex);
+    }
+}
+```
+
+There's a race condition between the capture of the `DisposableThing`, the disposal of `DisposableThing` and setting `DisposableThing.Current` it to null. In the end, the code is unreliable and may fail at random. Don't store disposable objects in async locals.
+
+2. ❌ A non-thread safe object stored in an async local
+
+```C#
+AmbientValues.Current = new Dictionary<int, string>();
+
+Parallel.For(0, 10, i =>
+{
+    AmbientValues.Current[i] = "processing";
+    LogCurrentValues();
+    AmbientValues.Current[i] = "done";
+});
+
+
+void LogCurrentValues()
+{
+    foreach (var pair in AmbientValues.Current)
+    {
+        Console.WriteLine(pair);
+    }
+}
+
+class AmbientValues
+{
+    private static readonly AsyncLocal<Dictionary<int, string>> _current = new();
+
+    public static Dictionary<int, string> Current
+    {
+        get => _current.Value!;
+        set => _current.Value = value;
+    }
+}
+```
+
+The above example stores a normal `Dictionary<int, string>` in an async local and does some parallel processing on it. While this may be obvious from the above example, async locals allow arbitrary code on arbitrary threads to access the execution context and thus any async locals associated with said context. As a result, it is important to assume that data can be accessed concurrently and should be made thread safe as a result.
+
+```C#
+class AmbientValues
+{
+    private static readonly AsyncLocal<ConcurrentDictionary<int, string>> _current = new();
+
+    public static ConcurrentDictionary<int, string> Current
+    {
+        get => _current.Value!;
+        set => _current.Value = value;
+    }
+}
+```
+
+:white_check_mark: **GOOD** The above uses a `ConcurrentDictionary<int, string>` which is thread safe.
+
+### Don't leak your AsyncLocal\<T\>
+
+Async locals flow across awaits automatically and can be captured by any API that explicitly calls `ExecutionContext.Capture`. The latter can lead to memory leaks in certain situations.
+
+#### Common APIs that capture the ExecutionContext
+
+APIs that run user callbacks usually store capture the current execution context in order to preserve async locals between callback registration and execution. Here are examples of some APIs that do this:
+
+- `Timer`
+- `CancellationToken.Register`
+- `new FileSystemWatcher`
+- `SocketAsyncEventArgs`
+- `Task.Run`
+- `ThreadPool.QueueUserWorkItem`
+
+❌ Here's an example of an execution context leak that causes memory pressure because of a lifetime mismatch between the API capturing the execution context, and the lifetime of the data stored in the async local.
+
+```C#
+using System.Collections.Concurrent;
+
+// Singleton cache
+var cache = new NumberCache(TimeSpan.FromHours(1));
+
+// Simulate 10000 concurrent requests
+Parallel.For(0, 10000, i =>
+{
+    ChunkyObject.Current = new ChunkyObject();
+
+    cache.Add(i);
+});
+
+Console.WriteLine("Before GC: " + BytesAsString(GC.GetGCMemoryInfo().HeapSizeBytes));
+Console.ReadLine();
+
+GC.Collect();
+GC.WaitForPendingFinalizers();
+
+Console.WriteLine("After GC: " + BytesAsString(GC.GetGCMemoryInfo().HeapSizeBytes));
+Console.ReadLine();
+
+static string BytesAsString(long bytes)
+{
+    string[] suffix = { "B", "KB", "MB", "GB", "TB" };
+    int i;
+    double doubleBytes = 0;
+
+    for (i = 0; bytes / 1024 > 0; i++, bytes /= 1024)
+    {
+        doubleBytes = bytes / 1024.0;
+    }
+
+    return string.Format("{0:0.00} {1}", doubleBytes, suffix[i]);
+}
+
+public class NumberCache
+{
+    private readonly ConcurrentDictionary<int, CancellationTokenSource> _cache = new ConcurrentDictionary<int, CancellationTokenSource>();
+    private TimeSpan _timeSpan;
+
+    public NumberCache(TimeSpan timeSpan)
+    {
+        _timeSpan = timeSpan;
+    }
+
+    public void Add(int key)
+    {
+        var cts = _cache.GetOrAdd(key, _ => new CancellationTokenSource());
+        // Delete entry on expiration
+        cts.Token.Register((_, _) => _cache.TryRemove(key, out _), null);
+
+        // Start count down
+        cts.CancelAfter(_timeSpan);
+    }
+}
+
+class ChunkyObject
+{
+    private static readonly AsyncLocal<ChunkyObject?> _current = new();
+
+    // Stores lots of data (but it should be gen0)
+    private readonly string _data = new string('A', 1024 * 32);
+
+    public static ChunkyObject? Current
+    {
+        get => _current.Value;
+        set => _current.Value = value;
+    }
+
+    public string Data => _data;
+}
+```
+
+The above example has a singleton `NumberCache` that stores numbers for an hour. We have a `ChunkyObject` which stores a 32K string in a field, and has an async local so that any code running may access the current `ChunkyObject`. This object should be collected when the `GC` runs, but instead, we're implicitly capturing the `ChunkyObject` in the `NumberCache` via `CancellationToken.Register`. 
+
+**Instead of just caching the number and a `CancellationTokenSource`, we're implicitly capturing and storing all async locals attached to the current execution context for an hour!**
+
+Try running the sample locally. Running this on my machine reports numbers like this:
+
+```
+Before GC: 654.65 MB
+After GC: 659.68 MB
+```
+
+With one small tweak to this code, we can avoid the implicit execution context capture.
+
+:white_check_mark: **GOOD** Use `CancellationToken.UnsafeRegister` to avoid capturing the execution context and any async locals as part of the `NumberCache`:
+
+```C#
+public class NumberCache
+{
+    private readonly ConcurrentDictionary<int, CancellationTokenSource> _cache = new ConcurrentDictionary<int, CancellationTokenSource>();
+    private TimeSpan _timeSpan;
+
+    public NumberCache(TimeSpan timeSpan)
+    {
+        _timeSpan = timeSpan;
+    }
+
+    public void Add(int key)
+    {
+        var cts = _cache.GetOrAdd(key, _ => new CancellationTokenSource());
+        // Delete entry on expiration
+        cts.Token.UnsafeRegister((_, _) => _cache.TryRemove(key, out _), null);
+
+        // Start count down
+        cts.CancelAfter(_timeSpan);
+    }
+}
+```
+
+The GC numbers after this change:
+
+```C#
+Before GC: 10.32 MB
+After GC: 5.10 MB
+```
+
+
 ## ConfigureAwait
 
 TBD
@@ -645,7 +1030,7 @@ public class Pinger
 }
 ```
 
-:white_check_mark: **GOOD** This example uses an `async Task`-based method and discards the `Task` in the `Timer` callback. If this method fails, it will not crash the process. Instead, it will fire the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception?view=netframework-4.7.2) event.
+:white_check_mark: **GOOD** This example uses an `async Task`-based method and discards the `Task` in the `Timer` callback. If this method fails, it will not crash the process. Instead, it will fire the [`TaskScheduler.UnobservedTaskException`](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception) event.
 
 ```C#
 public class Pinger

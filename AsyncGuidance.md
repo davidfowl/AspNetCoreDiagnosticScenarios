@@ -619,7 +619,7 @@ using (var thing = new DisposableThing())
 
     Dispatch();
 
-    // We're about the dispose the object so make sure nobody else captures this instance
+    // We're about to dispose the object so make sure nobody else captures this instance
     DisposableThing.Current = null;
 }
 

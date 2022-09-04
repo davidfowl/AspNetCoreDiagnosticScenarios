@@ -1248,7 +1248,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessToken
         context =>
         {
             products = _db.QueryAsync("SELECT Name from Products");
-        }};
+        });
     return await products;
 }
 ```

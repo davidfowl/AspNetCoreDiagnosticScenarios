@@ -977,6 +977,55 @@ Before GC: 10.32 MB
 After GC: 5.10 MB
 ```
 
+### Avoid setting AsyncLocal\<T\> values outside of async methods
+
+Async methods have a special behavior for async locals that make sure values do not propagage outside of the async method. 
+
+❌ Avoid setting async local values outside of async methods:
+
+```C#
+var local = new AsyncLocal<int>();
+MethodA();
+Console.WriteLine(local.Value);
+
+void MethodA()
+{
+    local.Value = 1;
+    MethodB();
+    Console.WriteLine(local.Value);
+}
+
+void MethodB()
+{
+    local.Value = 2;
+    Console.WriteLine(local.Value);
+}
+```
+
+The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremeley confusing behavior and hard to track down bugs.
+
+:white_check_mark: Set async locals in async methods:
+
+```C#
+var local = new AsyncLocal<int>();
+await MethodA();
+Console.WriteLine(local.Value);
+
+async Task MethodA()
+{
+    local.Value = 1;
+    await MethodB();
+    Console.WriteLine(local.Value);
+}
+
+async Task MethodB()
+{
+    local.Value = 2;
+    Console.WriteLine(local.Value);
+}
+```
+
+The above will print 2, 1, 0. This is because async method restore the original execution context on exit.
 
 ## ConfigureAwait
 

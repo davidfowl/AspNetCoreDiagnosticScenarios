@@ -949,7 +949,7 @@ After GC: 659.68 MB
 ```
 
 Here's a look at the heap with those objects. You can see we have stored 10,000 ChunkyObjects, strings rooted by those chunky objects. The object graph looks like
-CancellationToken -> ExecutionContext -> AsyncLocalValueMap -> ChunkObject -> string.
+CancellationTokenSource -> ExecutionContext -> AsyncLocalValueMap -> ChunkObject -> string.
 
 <img width="758" alt="image" src="https://user-images.githubusercontent.com/95136/188351756-967f3d37-b302-49d3-ba04-595433c6949c.png">
 
@@ -1053,7 +1053,7 @@ The execution context is storing `StrongBox<ChunkyObject>` with a null reference
 
 ### Avoid setting AsyncLocal\<T\> values outside of async methods
 
-Async methods have a special behavior for async locals that make sure values do not propagage outside of the async method. 
+Async methods have a special behavior for async locals that make sure values do not propagage outside of the async method.
 
 ❌ Avoid setting async local values outside of async methods:
 

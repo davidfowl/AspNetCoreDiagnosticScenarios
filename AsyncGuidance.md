@@ -863,9 +863,14 @@ using System.Collections.Concurrent;
 // Singleton cache
 var cache = new NumberCache(TimeSpan.FromHours(1));
 
+var executionContext = ExecutionContext.Capture();
+
 // Simulate 10000 concurrent requests
 Parallel.For(0, 10000, i =>
 {
+    // Restore the initial ExecutionContext per "request"
+    ExecutionContext.Restore(executionContext!);
+
     ChunkyObject.Current = new ChunkyObject();
 
     cache.Add(i);
@@ -943,6 +948,12 @@ Before GC: 654.65 MB
 After GC: 659.68 MB
 ```
 
+Here's a look at the heap with those objects. You can see we have stored 10,000 ChunkyObjects, strings rooted by those chunky objects. The object graph looks like
+CancellationToken -> ExecutionContext -> AsyncLocalValueMap -> ChunkObject -> string.
+
+<img width="758" alt="image" src="https://user-images.githubusercontent.com/95136/188351756-967f3d37-b302-49d3-ba04-595433c6949c.png">
+
+
 With one small tweak to this code, we can avoid the implicit execution context capture.
 
 :white_check_mark: **GOOD** Use `CancellationToken.UnsafeRegister` to avoid capturing the execution context and any async locals as part of the `NumberCache`:
@@ -972,10 +983,73 @@ public class NumberCache
 
 The GC numbers after this change:
 
-```C#
+```
 Before GC: 10.32 MB
 After GC: 5.10 MB
 ```
+
+The heap looks like we'd expect. There's no execution context capture, so the `ChunkyObject` isn't stored.
+
+<img width="752" alt="image" src="https://user-images.githubusercontent.com/95136/188352462-d7d627c6-e4e0-4487-b783-30880cc4916f.png">
+
+
+:bulb: **NOTE: You have NO control over how APIs decide to store the execution context, but with this understanding, you should be able to minimize memory leaks by clearing the memory using the technique described in [Creating an AsyncLocal\<T\>](#creating-an-asynclocalt) section.**
+
+```C#
+// Simulate 10000 concurrent requests
+Parallel.For(0, 10000, i =>
+{
+    // Restore the initial ExecutionContext per "request"
+    ExecutionContext.Restore(executionContext!);
+
+    ChunkyObject.Current = new ChunkyObject();
+
+    cache.Add(i);
+
+    // Null out the chunky object so the GC can release the memory
+    ChunkyObject.Current = default;
+});
+
+class ChunkyObject
+{
+    private static readonly AsyncLocal<StrongBox<ChunkyObject?>> _current = new();
+
+    // Stores lots of data (but it should be gen0)
+    private readonly string _data = new string('A', 1024 * 32);
+
+    public static ChunkyObject? Current
+    {
+        get => _current.Value?.Value;
+        set
+        {
+            var box = _current.Value;
+            if (box is not null)
+            {
+                // Mutate the value in any execution context that was copied
+                box.Value = null;
+            }
+
+            if (value is not null)
+            {
+                _current.Value = new StrongBox<ChunkyObject?>(value);
+            }
+        }
+    }
+
+    public string Data => _data;
+}
+```
+
+This technique reduces the heap memory **significantly**:
+
+```
+Before GC: 7.91 MB
+After GC: 5.66 MB
+```
+
+The execution context is storing `StrongBox<ChunkyObject>` with a null reference to the `ChunkyObject`. This is technically still a "leak" but we've reduced the impact significantly. Here's a look at the memory profile showing objects with 10,000 allocations (the number of requests we created). You can see the GC has collected `ChunkObject` instances but there are still 10,000 references to `StrongBox<ChunkyObject>`.
+
+<img width="760" alt="image" src="https://user-images.githubusercontent.com/95136/188351308-b174f843-0435-46db-8f31-b4d78c740947.png">
 
 ### Avoid setting AsyncLocal\<T\> values outside of async methods
 

@@ -685,7 +685,7 @@ class DisposableThing : IDisposable
 }
 ```
 
-This above example will always result in an `ObjectDisposedException` being thrown. Even though the `Log` method defensively checks for null before logging the value, it has a reference to the disposed `DisposableThing`. Setting the `AsyncLocal<DisposableThing>` to null does not affect the code inside of `Log`, this is because the execution context is copy on write.
+This above example will always result in an `ObjectDisposedException` being thrown. Even though the `Log` method defensively checks for null before logging the value, it has a reference to the disposed `DisposableThing`. Setting the `AsyncLocal<DisposableThing>` to null does not affect the code inside of `Log`, this is because the execution context is copy on write. This means that all future reads `DisposableThing.Current` will be null, but it won't affect any of the previous reads.
 
 When we set `DisposableThing.Current = null;` we are making a new execution context, not mutating the one that was captured by `Task.Run`. To get a better understanding of this run the following code:
 

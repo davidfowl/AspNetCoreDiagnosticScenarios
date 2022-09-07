@@ -609,7 +609,7 @@ If you cannot avoid it, it's best to make sure that anything put into an async l
 
 Lets look at 2 examples:
 
-1. ❌ A disposable object stored in an async local
+1. ❌ **BAD** A disposable object stored in an async local
 
 ```C#
 using (var thing = new DisposableThing())
@@ -790,7 +790,7 @@ void Log(DisposableThing thing)
 
 There's a race condition between the capture of the `DisposableThing`, the disposal of `DisposableThing` and setting `DisposableThing.Current` it to null. In the end, the code is unreliable and may fail at random. Don't store disposable objects in async locals.
 
-2. ❌ A non-thread safe object stored in an async local
+2. ❌ **BAD** A non-thread safe object stored in an async local
 
 ```C#
 AmbientValues.Current = new Dictionary<int, string>();
@@ -855,7 +855,7 @@ APIs that run user callbacks usually capture the current execution context in or
 - `Task.Run`
 - `ThreadPool.QueueUserWorkItem`
 
-❌ Here's an example of an execution context leak that causes memory pressure because of a lifetime mismatch between the API capturing the execution context, and the lifetime of the data stored in the async local.
+❌ **BAD** Here's an example of an execution context leak that causes memory pressure because of a lifetime mismatch between the API capturing the execution context, and the lifetime of the data stored in the async local.
 
 ```C#
 using System.Collections.Concurrent;
@@ -1062,7 +1062,7 @@ The execution context is storing `StrongBox<ChunkyObject>` with a null reference
 
 Async methods have a special behavior for async locals that make sure values do not propagage outside of the async method.
 
-❌ Avoid setting async local values outside of async methods:
+❌ **BAD** Avoid setting async local values outside of async methods:
 
 ```C#
 var local = new AsyncLocal<int>();
@@ -1085,7 +1085,7 @@ void MethodB()
 
 The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremeley confusing behavior and hard to track down bugs.
 
-:white_check_mark: Set async locals in async methods:
+:white_check_mark: **GOOD** Set async locals in async methods:
 
 ```C#
 var local = new AsyncLocal<int>();

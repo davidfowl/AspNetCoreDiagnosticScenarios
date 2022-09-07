@@ -996,6 +996,13 @@ The heap looks like we'd expect. There's no execution context capture, so the `C
 :bulb: **NOTE: You have NO control over how APIs decide to store the execution context, but with this understanding, you should be able to minimize memory leaks by clearing the memory using the technique described in [Creating an AsyncLocal\<T\>](#creating-an-asynclocalt) section.**
 
 ```C#
+using System.Collections.Concurrent;
+
+// Singleton cache
+var cache = new NumberCache(TimeSpan.FromHours(1));
+
+var executionContext = ExecutionContext.Capture();
+
 // Simulate 10000 concurrent requests
 Parallel.For(0, 10000, i =>
 {

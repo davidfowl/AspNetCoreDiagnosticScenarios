@@ -472,6 +472,8 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 }
 ```
 
+:white_check_mark: **GOOD** Prefer [`Task.WaitAsync`](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.waitasync?view=net-6.0) on .NET >= 6;
+
 ### Using a timeout
 
 ❌ **BAD** This example does not cancel the timer even if the operation successfully completes. This means you could end up with lots of timers, which can flood the timer queue. 
@@ -517,6 +519,8 @@ public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
     }
 }
 ```
+
+:white_check_mark: **GOOD** Prefer [`Task.WaitAsync`](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.waitasync?view=net-6.0) on .NET >= 6;
 
 ## Always call `FlushAsync` on `StreamWriter`(s) or `Stream`(s) before calling `Dispose`
 

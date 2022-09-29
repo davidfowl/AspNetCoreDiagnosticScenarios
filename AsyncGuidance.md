@@ -1191,6 +1191,37 @@ public class Pinger
 }
 ```
 
+:white_check_mark: **GOOD** This example uses the new [`PeriodicTimer`](https://learn.microsoft.com/en-us/dotnet/api/system.threading.periodictimer) introduced in .NET 6:
+
+```C#
+public class Pinger : IDisposable
+{
+    private readonly PeriodicTimer _timer;
+    private readonly HttpClient _client;
+
+    public Pinger(HttpClient client)
+    {
+        _client = client;
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        _ = Task.Run(DoAsyncPings);
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
+    }
+
+    private async Task DoAsyncPings()
+    {
+        while (await _timer.WaitForNextTickAsync())
+        {
+            // TODO: Handle exceptions
+            await _client.GetAsync("http://mybackend/api/ping");
+        }
+    }
+}
+```
+
 ## Implicit `async void` delegates
 
 Imagine a `BackgroundQueue` with a `FireAndForget` that takes a callback. This method will execute the callback at some time in the future.

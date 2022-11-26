@@ -1087,7 +1087,7 @@ void MethodB()
 }
 ```
 
-The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremeley confusing behavior and hard to track down bugs.
+The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremely confusing behavior and hard to track down bugs.
 
 :white_check_mark: **GOOD** Set async locals in async methods:
 

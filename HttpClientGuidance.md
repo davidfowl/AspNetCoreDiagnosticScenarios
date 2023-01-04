@@ -1,7 +1,7 @@
 # Table of contents
  - [Using HttpClient](#using-httpclient)
  - [Different platform implementations](#different-platform-implementations)
- - [A note about WebClient](#webclient)
+ - [A note about WebClient](#a-note-about-webclient)
    
 ## Using HttpClient
 

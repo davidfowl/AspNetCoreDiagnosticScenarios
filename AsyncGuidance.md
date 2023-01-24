@@ -1064,7 +1064,7 @@ The execution context is storing `StrongBox<ChunkyObject>` with a null reference
 
 ### Avoid setting AsyncLocal\<T\> values outside of async methods
 
-Async methods have a special behavior for async locals that make sure values do not propagage outside of the async method.
+Async methods have a special behavior for async locals that make sure values do not propagate outside of the async method.
 
 ❌ **BAD** Avoid setting async local values outside of async methods:
 

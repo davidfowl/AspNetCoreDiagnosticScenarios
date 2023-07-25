@@ -211,6 +211,40 @@ public class QueueProcessor
 }
 ```
 
+:white_check_mark: **GOOD** This example utilizes a `TaskFactory` with `TaskCreationOptions.LongRunning` to process the message queue instead of creating a thread manually.
+
+```C#
+public class QueueProcessor
+{
+    private readonly BlockingCollection<Message> _messageQueue = new BlockingCollection<Message>();
+
+    public Task StartProcessing() => Task.Factory.StartNew(ProcessQueue, TaskCreationOptions.LongRunning);
+
+    public void Enqueue(Message message)
+    {
+        _messageQueue.Add(message);
+    }
+
+    private void ProcessQueue()
+    {
+        foreach (var item in _messageQueue.GetConsumingEnumerable())
+        {
+            ProcessItem(item);
+        }
+    }
+
+    private void ProcessItem(Message message) { }
+}
+```
+
+Utilizing `TaskCreationOptions.LongRunning` introduces several advantages in comparison with manual thread creation:
+
+- It can be easily combined with `await` and TPL APIs, such as `Task.WhenAll`, amongst others.
+- It provides a superior exception handling mechanism. For instance, in the event of an unhandled exception in a manually created thread, the application will crash (unless handled via `AppDomain.CurrentDomain.UnhandledException`), but with `.LongRunning`, it will be wrapped into a `Task` as an `AggregateException`.
+
+:bulb: **NOTE: The `TaskCreationOptions.LongRunning` option is essentially a recommendation to the `TaskScheduler`, which may interpret it differently in custom `TaskScheduler` applications or runtimes, or future updates to the .NET runtime libraries. If your primary goal is to spawn a new dedicated thread, then you might consider using the manual thread creation approach discussed previously.**
+
+
 ## Avoid using `Task.Result` and `Task.Wait`
 
 There are very few ways to use `Task.Result` and `Task.Wait` correctly so the general advice is to completely avoid using them in your code. 

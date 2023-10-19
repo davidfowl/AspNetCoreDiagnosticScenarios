@@ -304,7 +304,7 @@ public IActionResult FireAndForget1()
 ```
 
 
-:white_check_mark: **GOOD** This example copies the data required in the background task during the request explictly and does not reference
+:white_check_mark: **GOOD** This example copies the data required in the background task during the request explicitly and does not reference
 anything from the controller itself.
 
 ```C#

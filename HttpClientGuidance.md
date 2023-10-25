@@ -12,7 +12,7 @@
 `HttpClient` is a wrapper API around an `HttpMessageHandler`. The most inner `HttpMessageHandler` is the one that's responsible for making the HTTP request. There are several implementations on various .NET platforms. This document is focused on server applications and will focus on 2-3 main implementations:
 - HttpClientHandler/WebRequestHandler on .NET Framework
 - SocketHttpHandler on .NET Core/5
-- WinHttpHandler on .NET Framework or .NET Core/5 (runs on both but is Windows specific)
+- WinHttpHandler on .NET Framework or .NET Core/5 (runs on both but is Windows-specific)
 
 ## A note about WebClient
 
@@ -31,7 +31,7 @@ public string DoSomethingAsync()
 :white_check_mark: **GOOD** This example uses an HttpClient to asynchronously make an HTTP request.
 
 ```C#
-static readonly HttpClient client = new HttpClient();
+static read-only HttpClient client = new HttpClient();
 
 public async Task<string> DoSomethingAsync()
 {

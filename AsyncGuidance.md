@@ -3,7 +3,7 @@
    - [Asynchrony is viral](#asynchrony-is-viral)
    - [Async void](#async-void)
    - [Prefer Task.FromResult over Task.Run for pre-computed or trivially computed data](#prefer-taskfromresult-over-taskrun-for-pre-computed-or-trivially-computed-data)
-   - [Avoid using Task.Run for long running work that blocks the thread](#avoid-using-taskrun-for-long-running-work-that-blocks-the-thread)
+   - [Avoid using Task.Run for long-running work that blocks the thread](#avoid-using-taskrun-for-long-running-work-that-blocks-the-thread)
    - [Avoid using Task.Result and Task.Wait](#avoid-using-taskresult-and-taskwait)
    - [Prefer await over ContinueWith](#prefer-await-over-continuewith)
    - [Always create TaskCompletionSource\<T\> with TaskCreationOptions.RunContinuationsAsynchronously](#always-create-taskcompletionsourcet-with-taskcreationoptionsruncontinuationsasynchronously)
@@ -14,7 +14,7 @@
    - [Prefer async/await over directly returning Task](#prefer-asyncawait-over-directly-returning-task)
    - [AsyncLocal\<T\>](#asynclocalt)
    - [ConfigureAwait](#configureawait)
- - [Scenarios](#scenarios)
+   - [Scenarios](#scenarios)
    - [Timer callbacks](#timer-callbacks)
    - [Implicit async void delegates](#implicit-async-void-delegates)
    - [ConcurrentDictionary.GetOrAdd](#concurrentdictionarygetoradd)
@@ -29,7 +29,7 @@ web services. As a result, there's been lots of confusion on the best practices 
 
 ## Asynchrony is viral 
 
-Once you go async, all of your callers **SHOULD** be async, since efforts to be async amount to nothing unless the entire callstack is async. In many cases, being partially async can be worse than being entirely synchronous. Therefore it is best to go all in, and make everything async at once.
+Once you go async, all of your callers **SHOULD** be async, since efforts to be async amount to nothing unless the entire call stack is async. In many cases, being partially asynchronous can be worse than being entirely synchronous. Therefore it is best to go all in, and make everything async at once.
 
 ❌ **BAD** This example uses the `Task.Result` and as a result blocks the current thread to wait for the result. This is an example of [sync over async](#avoid-using-taskresult-and-taskwait).
 
@@ -53,7 +53,7 @@ public async Task<int> DoSomethingAsync()
 
 ## Async void
 
-Use of async void in ASP.NET Core applications is **ALWAYS** bad. Avoid it, never do it. Typically, it's used when developers are trying to implement fire and forget patterns triggered by a controller action. Async void methods will crash the process if an exception is thrown. We'll look at more of the patterns that cause developers to do this in ASP.NET Core applications but here's a simple example:
+The use of async void in ASP.NET Core applications is **ALWAYS** bad. Avoid it, never do it. Typically, it's used when developers are trying to implement fire-and-forget patterns triggered by a controller action. Async void methods will crash the process if an exception is thrown. We'll look at more of the patterns that cause developers to do this in ASP.NET Core applications but here's a simple example:
 
 ❌ **BAD** Async void methods can't be tracked and therefore unhandled exceptions can result in application crashes.
 
@@ -97,7 +97,7 @@ public class MyController : Controller
 
 ## Prefer `Task.FromResult` over `Task.Run` for pre-computed or trivially computed data
 
-For pre-computed results, there's no need to call `Task.Run`, that will end up queuing a work item to the thread pool that will immediately complete with the pre-computed value. Instead, use `Task.FromResult`, to create a task wrapping already computed data.
+For pre-computed results, there's no need to call `Task.Run`, which will end up queuing a work item to the thread pool that will immediately complete with the pre-computed value. Instead, use `Task.FromResult`, to create a task wrapping already computed data.
 
 ❌ **BAD** This example wastes a thread-pool thread to return a trivially computed value.
 
@@ -137,9 +137,9 @@ public class MyLibrary
 }
 ```
 
-## Avoid using Task.Run for long running work that blocks the thread
+## Avoid using Task.Run for long-running work that blocks the thread
 
-Long running work in this context refers to a thread that's running for the lifetime of the application doing background work (like processing queue items, or sleeping and waking up to process some data). `Task.Run` will queue a work item to the thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread-pool thread for long-running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations etc). Instead, spawn a new thread manually to do long running blocking work.
+Long-running work in this context refers to a thread that's running for the lifetime of the application doing background work (like processing queue items, or sleeping and waking up to process some data). `Task.Run` will queue a work item to the thread pool. The assumption is that that work will finish quickly (or quickly enough to allow reusing that thread within some reasonable timeframe). Stealing a thread-pool thread for long-running work is bad since it takes that thread away from other work that could be done (timer callbacks, task continuations, etc). Instead, spawn a new thread manually to do long-running blocking work.
 
 :bulb: **NOTE: The thread pool grows if you block threads but it's bad practice to do so.**
 
@@ -240,7 +240,7 @@ public class QueueProcessor
 Utilizing `TaskCreationOptions.LongRunning` introduces several advantages in comparison with manual thread creation:
 
 - It can be easily combined with `await` and TPL APIs, such as `Task.WhenAll`, amongst others.
-- It provides a superior exception handling mechanism. For instance, in the event of an unhandled exception in a manually created thread, the application will crash (unless handled via `AppDomain.CurrentDomain.UnhandledException`), but with `.LongRunning`, it will be wrapped into a `Task` as an `AggregateException`.
+- It provides a superior exception-handling mechanism. For instance, in the event of an unhandled exception in a manually created thread, the application will crash (unless handled via `AppDomain.CurrentDomain.UnhandledException`), but with `.LongRunning`, it will be wrapped into a `Task` as an `AggregateException`.
 
 :bulb: **NOTE: The `TaskCreationOptions.LongRunning` option is essentially a recommendation to the `TaskScheduler`, which may interpret it differently in custom `TaskScheduler` applications or runtimes, or future updates to the .NET runtime libraries. If your primary goal is to spawn a new dedicated thread, then you might consider using the manual thread creation approach discussed previously.**
 
@@ -251,7 +251,7 @@ There are very few ways to use `Task.Result` and `Task.Wait` correctly so the ge
 
 ### :warning: Sync over `async`
 
-Using `Task.Result` or `Task.Wait` to block wait on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over async". Here is what happens at a very high level:
+Using `Task.Result` or `Task.Wait` to block waiting on an asynchronous operation to complete is *MUCH* worse than calling a truly synchronous API to block. This phenomenon is dubbed "Sync over async". Here is what happens at a very high level:
 
 - An asynchronous operation is kicked off.
 - The calling thread is blocked waiting for that operation to complete.
@@ -261,7 +261,7 @@ The result is that we need to use 2 threads instead of 1 to complete synchronous
 
 ### :warning: Deadlocks
 
-The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has led to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's no good way to block waiting for a Task to complete.
+The `SynchronizationContext` is an abstraction that gives application models a chance to control where asynchronous continuations run. ASP.NET (non-core), WPF, and Windows Forms each have an implementation that will result in a deadlock if Task.Wait or Task.Result is used on the main thread. This behavior has led to a bunch of "clever" code snippets that show the "right" way to block waiting for a Task. The truth is, there's no good way to block waiting for a Task to complete.
 
 :bulb:**NOTE: ASP.NET Core does not have a `SynchronizationContext` and is not prone to the deadlock problem.**
 
@@ -394,9 +394,9 @@ public Task<int> DoSomethingAsync()
 
 ## Always dispose `CancellationTokenSource`(s) used for timeouts
 
-`CancellationTokenSource` objects that are used for timeouts (are created with timers or uses the `CancelAfter` method), can put pressure on the timer queue if not disposed.
+`CancellationTokenSource` objects that are used for timeouts (are created with timers or use the `CancelAfter` method), can put pressure on the timer queue if not disposed.
 
-❌ **BAD** This example does not dispose the `CancellationTokenSource` and as a result the timer stays in the queue for 10 seconds after each request is made.
+❌ **BAD** This example does not dispose of the `CancellationTokenSource` and as a result, the timer stays in the queue for 10 seconds after each request is made.
 
 ```C#
 public async Task<Stream> HttpClientAsyncWithCancellationBad()
@@ -411,7 +411,7 @@ public async Task<Stream> HttpClientAsyncWithCancellationBad()
 }
 ```
 
-:white_check_mark: **GOOD** This example disposes the `CancellationTokenSource` and properly removes the timer from the queue.
+:white_check_mark: **GOOD** This example disposes of the `CancellationTokenSource` and properly removes the timer from the queue.
 
 ```C#
 public async Task<Stream> HttpClientAsyncWithCancellationGood()
@@ -429,7 +429,7 @@ public async Task<Stream> HttpClientAsyncWithCancellationGood()
 
 ## Always flow `CancellationToken`(s) to APIs that take a `CancellationToken`
 
-Cancellation is cooperative in .NET. Everything in the call-chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
+Cancellation is cooperative in .NET. Everything in the call chain has to be explicitly passed the `CancellationToken` in order for it to work well. This means you need to explicitly pass the token into other APIs that take a token if you want cancellation to be most effective.
 
 ❌ **BAD** This example neglects to pass the `CancellationToken` to `Stream.ReadAsync` making the operation effectively not cancellable.
 
@@ -457,16 +457,16 @@ public async Task<string> DoAsyncThing(CancellationToken cancellationToken = def
 
 ## Cancelling uncancellable operations
 
-One of the coding patterns that appears when doing asynchronous programming is cancelling an uncancellable operation. This usually means creating another task that completes when a timeout or `CancellationToken` fires, and then using `Task.WhenAny` to detect a complete or cancelled operation.
+One of the coding patterns that appear when doing asynchronous programming is canceling an uncancellable operation. This usually means creating another task that completes when a timeout or `CancellationToken` fires, and then using `Task.WhenAny` to detect a complete or cancelled operation.
 
 ### Using CancellationTokens
 
-❌ **BAD** This example uses `Task.Delay(-1, token)` to create a `Task` that completes when the `CancellationToken` fires, but if it doesn't fire, there's no way to dispose the `CancellationTokenRegistration`. This can lead to a memory leak.
+❌ **BAD** This example uses `Task.Delay(-1, token)` to create a `Task` that completes when the `CancellationToken` fires, but if it doesn't fire, there's no way to dispose of the `CancellationTokenRegistration`. This can lead to a memory leak.
 
 ```C#
 public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
 {
-    // There's no way to dispose the registration
+    // There's no way to dispose of the registration
     var delayTask = Task.Delay(-1, cancellationToken);
 
     var resultTask = await Task.WhenAny(task, delayTask);
@@ -480,7 +480,7 @@ public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationT
 }
 ```
 
-:white_check_mark: **GOOD** This example disposes the `CancellationTokenRegistration` when one of the `Task(s)` complete.
+:white_check_mark: **GOOD** This example disposes of the `CancellationTokenRegistration` when one of the `Task(s)` is complete.
 
 ```C#
 public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
@@ -621,7 +621,7 @@ public Task<int> DoSomethingAsync()
 }
 ```
 
-:white_check_mark: **GOOD** This examples uses async/await instead of directly returning the Task.
+:white_check_mark: **GOOD** This example uses async/await instead of directly returning the Task.
 
 ```C#
 public async Task<int> DoSomethingAsync()
@@ -634,7 +634,7 @@ public async Task<int> DoSomethingAsync()
 
 ## AsyncLocal\<T\>
 
-Async locals are a way to store/retrieve ambient state throughout an application. This can be a *very* useful alternative to flowing explicit state everywhere, especially through call sites that you do not have much control over. While it is powerful, it is also dangerous if used incorrectly. Async locals are attached to the [execution context](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext) which flows *everywhere implicitly*. Disabling execution context flow requires use of advanced APIs (typically prefixed with the Unsafe name). As such, there's very little control over what code will attempt to access these values. 
+Async locals are a way to store/retrieve ambient state throughout an application. This can be a *very* useful alternative to flowing explicit state everywhere, especially through call sites that you do not have much control over. While it is powerful, it is also dangerous if used incorrectly. Async locals are attached to the [execution context](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext) which flows *everywhere implicitly*. Disabling execution context flow requires the use of advanced APIs (typically prefixed with the Unsafe name). As such, there's very little control over what code will attempt to access these values. 
 
 ### Creating an AsyncLocal\<T\>
 
@@ -643,9 +643,9 @@ If you can avoid async locals, do so by explicitly passing state around or using
 If you cannot avoid it, it's best to make sure that anything put into an async local is:
 
 1. Not disposable
-2. Immutable/read only/thread safe
+2. Immutable/read-only/thread-safe
 
-Lets look at 2 examples:
+Let's look at 2 examples:
 
 1. ❌ **BAD** A disposable object stored in an async local
 
@@ -723,7 +723,7 @@ class DisposableThing : IDisposable
 }
 ```
 
-This above example will always result in an `ObjectDisposedException` being thrown. Even though the `Log` method defensively checks for null before logging the value, it has a reference to the disposed `DisposableThing`. Setting the `AsyncLocal<DisposableThing>` to null does not affect the code inside of `Log`, this is because the execution context is copy on write. This means that all future reads `DisposableThing.Current` will be null, but it won't affect any of the previous reads.
+This above example will always result in an `ObjectDisposedException` being thrown. Even though the `Log` method defensively checks for null before logging the value, it has a reference to the disposed of `DisposableThing`. Setting the `AsyncLocal<DisposableThing>` to null does not affect the code inside of `Log`, this is because the execution context is copy on write. This means that all future reads `DisposableThing.Current` will be null, but it won't affect any of the previous reads.
 
 When we set `DisposableThing.Current = null;` we are making a new execution context, not mutating the one that was captured by `Task.Run`. To get a better understanding of this run the following code:
 
@@ -828,7 +828,7 @@ void Log(DisposableThing thing)
 
 There's a race condition between the capture of the `DisposableThing`, the disposal of `DisposableThing` and setting `DisposableThing.Current` it to null. In the end, the code is unreliable and may fail at random. Don't store disposable objects in async locals.
 
-2. ❌ **BAD** A non-thread safe object stored in an async local
+2. ❌ **BAD** A non-thread-safe object stored in an async local
 
 ```C#
 AmbientValues.Current = new Dictionary<int, string>();
@@ -861,7 +861,7 @@ class AmbientValues
 }
 ```
 
-The above example stores a normal `Dictionary<int, string>` in an async local and does some parallel processing on it. While this may be obvious from the above example, async locals allow arbitrary code on arbitrary threads to access the execution context and thus any async locals associated with said context. As a result, it is important to assume that data can be accessed concurrently and should be made thread safe as a result.
+The above example stores a normal `Dictionary<int, string>` in an async local and does some parallel processing on it. While this may be obvious from the above example, async locals allow arbitrary code on arbitrary threads to access the execution context and thus any async locals associated with said context. As a result, it is important to assume that data can be accessed concurrently and should be made thread-safe as a result.
 
 ```C#
 class AmbientValues
@@ -1098,7 +1098,7 @@ The execution context is storing `StrongBox<ChunkyObject>` with a null reference
 
 ### Avoid setting AsyncLocal\<T\> values outside of async methods
 
-Async methods have a special behavior for async locals that make sure values do not propagate outside of the async method.
+Async methods have a special behavior for async locals that makes sure values do not propagate outside of the async method.
 
 ❌ **BAD** Avoid setting async local values outside of async methods:
 
@@ -1121,7 +1121,7 @@ void MethodB()
 }
 ```
 
-The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremely confusing behavior and hard to track down bugs.
+The above prints 2, 2, 2. The execution context mutations are being propagated outside of the method. This can lead to extremely confusing behavior and hard-to-track down bugs.
 
 :white_check_mark: **GOOD** Set async locals in async methods:
 
@@ -1144,7 +1144,7 @@ async Task MethodB()
 }
 ```
 
-The above will print 2, 1, 0. This is because async method restore the original execution context on exit.
+The above will print 2, 1, 0. This is because the async method restores the original execution context on exit.
 
 ## ConfigureAwait
 
@@ -1152,11 +1152,11 @@ TBD
 
 # Scenarios
 
-The above tries to distill general guidance, but doesn't do justice to the kinds of real-world situations that cause code like this to be written in the first place (bad code). This section tries to take concrete examples from real applications and turn them into something simple to help you relate these problems to existing codebases.
+The above tries to distill general guidance but doesn't do justice to the kinds of real-world situations that cause code like this to be written in the first place (bad code). This section tries to take concrete examples from real applications and turn them into something simple to help you relate these problems to existing codebases.
 
 ## `Timer` callbacks
 
-❌ **BAD** The `Timer` callback is `void`-returning and we have asynchronous work to execute. This example uses `async void` to accomplish it and as a result can crash the process if an exception occurs.
+❌ **BAD** The `Timer` callback is `void`-returning and we have asynchronous work to execute. This example uses `async void` to accomplish it and as a result, can crash the process if an exception occurs.
 
 ```C#
 public class Pinger
@@ -1177,7 +1177,7 @@ public class Pinger
 }
 ```
 
-❌ **BAD** This attempts to block in the `Timer` callback. This may result in thread-pool starvation and is an example of [sync over async](#warning-sync-over-async)
+❌ **BAD** This attempts to block the `Timer` callback. This may result in thread-pool starvation and is an example of [sync over async](#warning-sync-over-async)
 
 ```C#
 public class Pinger

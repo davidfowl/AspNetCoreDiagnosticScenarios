@@ -11,3 +11,8 @@ Next, you can find some guides for writing scalable services in ASP.NET Core. So
 - [Asynchronous Programming](AsyncGuidance.md)
 
 *NOTE:* The examples shown here are based on experiences with customer applications and issues found on Github and Stack Overflow.
+
+### All Thanks to Our Contributors:
+<a href="https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=davidfowl/AspNetCoreDiagnosticScenarios" />
+</a>

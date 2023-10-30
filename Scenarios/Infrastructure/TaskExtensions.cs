@@ -46,7 +46,7 @@
         }
 
         /// <summary>
-        /// This method does not cancel the timer even if the operation successfuly completes.
+        /// This method does not cancel the timer even if the operation successfully completes.
         /// This means you could end up with timer queue flooding!
         /// </summary>
         public static async Task<T> TimeoutAfterBad<T>(this Task<T> task, TimeSpan timeout)
@@ -64,7 +64,7 @@
         }
 
         /// <summary>
-        /// This method cancels the timer if the operation succesfully completes.
+        /// This method cancels the timer if the operation successfully completes.
         /// </summary>
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
         {

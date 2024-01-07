@@ -282,8 +282,8 @@ public class AsyncController : Controller
 
 ## Do not capture the HttpContext in background threads
 
-❌ **BAD** This example shows a closure is capturing the HttpContext from the Controller property. This is bad because this work item could run
-outside of the request scope and as a result, could lead to reading a bogus HttpContext.
+❌ **BAD** This example shows a closure is capturing the `HttpContext` from the Controller property. This is bad because this work item could run
+outside of the request scope and as a result, could lead to reading a bogus `HttpContext`.
 
 ```C#
 [HttpGet("/fire-and-forget-1")]

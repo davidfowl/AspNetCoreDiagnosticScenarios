@@ -1,7 +1,7 @@
 # Table of contents
  - [ASP.NET Core Guidance](#aspnet-core-guidance)
    - [Avoid using synchronous Read/Write overloads on HttpRequest.Body and HttpResponse.Body](#avoid-using-synchronous-readwrite-overloads-on-httprequestbody-and-httpresponsebody)
-   - [Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form](#prefer-using-httprequestreadasformasync-over-httprequestform)
+   - [Prefer using HttpRequest.ReadFormAsync() over HttpRequest.Form](#prefer-using-httprequestreadformasync-over-httprequestform)
    - [Use buffered and synchronous reads and writes as an alternative to asynchronous reading and writing](#use-buffered-and-synchronous-reads-and-writes-as-an-alternative-to-asynchronous-reading-and-writing)
    - [Avoid reading large request bodies or response bodies into memory](#avoid-reading-large-request-bodies-or-response-bodies-into-memory)
    - [Do not store IHttpContextAccessor.HttpContext in a field](#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field)
@@ -54,9 +54,9 @@ public class MyController : Controller
 
 :bulb:**NOTE: If the request is large it could lead to out of memory problems which can result in a Denial Of Service. See [this](#avoid-reading-large-request-bodies-or-response-bodies-into-memory) for more information.**
 
-## Prefer using HttpRequest.ReadAsFormAsync() over HttpRequest.Form
+## Prefer using HttpRequest.ReadFormAsync() over HttpRequest.Form
 
-You should always prefer `HttpRequest.ReadAsFormAsync()` over `HttpRequest.Form`. The only time it is safe to use `HttpRequest.Form` is the form has already been read by a call to `HttpRequest.ReadAsFormAsync()` and the cached form value is being read using `HttpRequest.Form`. 
+You should always prefer `HttpRequest.ReadFormAsync()` over `HttpRequest.Form`. The only time it is safe to use `HttpRequest.Form` is the form has already been read by a call to `HttpRequest.ReadFormAsync()` and the cached form value is being read using `HttpRequest.Form`. 
 
 ❌ **BAD** This example uses HttpRequest.Form uses [sync over async](AsyncGuidance.md#avoid-using-taskresult-and-taskwait) under the covers and can lead to thread pool starvation (in some cases).
 
@@ -75,7 +75,7 @@ public class MyController : Controller
 }
 ```
 
-:white_check_mark: **GOOD** This example uses `HttpRequest.ReadAsFormAsync()` to read the form body asynchronously.
+:white_check_mark: **GOOD** This example uses `HttpRequest.ReadFormAsync()` to read the form body asynchronously.
 
 ```C#
 public class MyController : Controller
@@ -83,7 +83,7 @@ public class MyController : Controller
     [HttpPost("/form-body")]
     public async Task<IActionResult> Post()
     {
-        var form = await HttpRequest.ReadAsFormAsync();
+        var form = await HttpRequest.ReadFormAsync();
         
         Process(form["id"], form["name"]);
 

@@ -363,7 +363,7 @@ public IActionResult FireAndForget3([FromServices]IServiceScopeFactory serviceSc
         // Create a scope for the lifetime of the background operation and resolve services from it
         using (var scope = serviceScopeFactory.CreateScope())
         {
-            // This will a PokemonDbContext from the correct scope and the operation will succeed
+            // This will resolve a PokemonDbContext from the correct scope and the operation will succeed
             var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
 
             context.Pokemon.Add(new Pokemon());

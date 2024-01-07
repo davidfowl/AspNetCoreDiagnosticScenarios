@@ -338,7 +338,7 @@ public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
         await Task.Delay(1000);
 
         // This closure is capturing the context from the Controller action parameter. This is bad because this work item could run
-        // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this throw an ObjectDisposedException
+        // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this throws an ObjectDisposedException
         context.Pokemon.Add(new Pokemon());
         await context.SaveChangesAsync();
     });

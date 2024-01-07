@@ -326,8 +326,8 @@ public IActionResult FireAndForget3()
 
 ## Do not capture services injected into the controllers on background threads
 
-❌ **BAD** This example shows a closure is capturing the DbContext from the Controller action parameter. This is bad because this work item could run
-outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will end up with an ObjectDisposedException.
+❌ **BAD** This example shows a closure is capturing the `DbContext` from the Controller action parameter. This is bad because this work item could run
+outside of the request scope and the `PokemonDbContext` is scoped to the request. As a result, this will end up with an `ObjectDisposedException`.
 
 ```C#
 [HttpGet("/fire-and-forget-1")]

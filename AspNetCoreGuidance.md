@@ -410,7 +410,7 @@ app.Use(async (next, context) =>
 });
 ```
 
-:white_check_mark: **GOOD** This examples uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
+:white_check_mark: **GOOD** This example uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
 
 It allows you to register a callback that will be invoked just before response headers are written to the client. It gives you the ability to append or override headers just in time, without requiring knowledge of the next middleware in the pipeline.
 

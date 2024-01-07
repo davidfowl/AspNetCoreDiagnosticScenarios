@@ -31,7 +31,7 @@ public string DoSomethingAsync()
 :white_check_mark: **GOOD** This example uses an HttpClient to asynchronously make an HTTP request.
 
 ```C#
-static read-only HttpClient client = new HttpClient();
+static readonly HttpClient client = new HttpClient();
 
 public async Task<string> DoSomethingAsync()
 {

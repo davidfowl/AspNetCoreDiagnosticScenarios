@@ -115,7 +115,7 @@ When using a serializer/de-serializer that only supports synchronous reads and w
 
 The `IHttpContextAccessor.HttpContext` will return the `HttpContext` of the active request when accessed from the request thread. It should not be stored in a field or variable.
 
-❌ **BAD** This example stores the HttpContext in a field then attempts to use it later.
+❌ **BAD** This example stores the `HttpContext` in a field then attempts to use it later.
 
 ```C#
 public class MyType
@@ -136,9 +136,9 @@ public class MyType
 }
 ```
 
-The above logic will likely capture a null or bogus HttpContext in the constructor for later use.
+The above logic will likely capture a null or bogus `HttpContext` in the constructor for later use.
 
-:white_check_mark: **GOOD** This example stores the IHttpContextAccesor itself in a field and uses the HttpContext field at the correct time (checking for null).
+:white_check_mark: **GOOD** This example stores the `IHttpContextAccessor` itself in a field and uses the `HttpContext` field at the correct time (checking for null).
 
 ```C#
 public class MyType

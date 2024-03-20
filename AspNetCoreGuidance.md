@@ -115,7 +115,7 @@ When using a serializer/de-serializer that only supports synchronous reads and w
 
 The `IHttpContextAccessor.HttpContext` will return the `HttpContext` of the active request when accessed from the request thread. It should not be stored in a field or variable.
 
-❌ **BAD** This example stores the HttpContext in a field then attempts to use it later.
+❌ **BAD** This example stores the `HttpContext` in a field then attempts to use it later.
 
 ```C#
 public class MyType
@@ -136,9 +136,9 @@ public class MyType
 }
 ```
 
-The above logic will likely capture a null or bogus HttpContext in the constructor for later use.
+The above logic will likely capture a null or bogus `HttpContext` in the constructor for later use.
 
-:white_check_mark: **GOOD** This example stores the IHttpContextAccesor itself in a field and uses the HttpContext field at the correct time (checking for null).
+:white_check_mark: **GOOD** This example stores the `IHttpContextAccessor` itself in a field and uses the `HttpContext` field at the correct time (checking for null).
 
 ```C#
 public class MyType
@@ -282,8 +282,8 @@ public class AsyncController : Controller
 
 ## Do not capture the HttpContext in background threads
 
-❌ **BAD** This example shows a closure is capturing the HttpContext from the Controller property. This is bad because this work item could run
-outside of the request scope and as a result, could lead to reading a bogus HttpContext.
+❌ **BAD** This example shows a closure is capturing the `HttpContext` from the Controller property. This is bad because this work item could run
+outside of the request scope and as a result, could lead to reading a bogus `HttpContext`.
 
 ```C#
 [HttpGet("/fire-and-forget-1")]
@@ -326,8 +326,8 @@ public IActionResult FireAndForget3()
 
 ## Do not capture services injected into the controllers on background threads
 
-❌ **BAD** This example shows a closure is capturing the DbContext from the Controller action parameter. This is bad because this work item could run
-outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this will end up with an ObjectDisposedException.
+❌ **BAD** This example shows a closure is capturing the `DbContext` from the Controller action parameter. This is bad because this work item could run
+outside of the request scope and the `PokemonDbContext` is scoped to the request. As a result, this will end up with an `ObjectDisposedException`.
 
 ```C#
 [HttpGet("/fire-and-forget-1")]
@@ -338,7 +338,7 @@ public IActionResult FireAndForget1([FromServices]PokemonDbContext context)
         await Task.Delay(1000);
 
         // This closure is capturing the context from the Controller action parameter. This is bad because this work item could run
-        // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this throw an ObjectDisposedException
+        // outside of the request scope and the PokemonDbContext is scoped to the request. As a result, this throws an ObjectDisposedException
         context.Pokemon.Add(new Pokemon());
         await context.SaveChangesAsync();
     });
@@ -363,7 +363,7 @@ public IActionResult FireAndForget3([FromServices]IServiceScopeFactory serviceSc
         // Create a scope for the lifetime of the background operation and resolve services from it
         using (var scope = serviceScopeFactory.CreateScope())
         {
-            // This will a PokemonDbContext from the correct scope and the operation will succeed
+            // This will resolve a PokemonDbContext from the correct scope and the operation will succeed
             var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
 
             context.Pokemon.Add(new Pokemon());
@@ -410,7 +410,7 @@ app.Use(async (next, context) =>
 });
 ```
 
-:white_check_mark: **GOOD** This examples uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
+:white_check_mark: **GOOD** This example uses `HttpResponse.OnStarting` to set the headers before the response headers are flushed to the client.
 
 It allows you to register a callback that will be invoked just before response headers are written to the client. It gives you the ability to append or override headers just in time, without requiring knowledge of the next middleware in the pipeline.
 

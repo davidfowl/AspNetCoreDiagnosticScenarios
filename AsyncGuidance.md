@@ -1452,7 +1452,7 @@ public async Task<IEnumerable<Product>> GetDataImpersonatedAsync(SafeAccessToken
 }
 ```
 
-❌ **BAD** This example uses `Task.Result` to get the connection in the constructor. This could lead to thread-pool starvation and deadlocks.
+❌ **BAD** This example uses `Task.Result` to execute the query synchronously (sync over async). This could lead to thread-pool starvation and deadlocks.
 
 ```C#
 public IEnumerable<Product> GetDataImpersonated(SafeAccessTokenHandle safeAccessTokenHandle)

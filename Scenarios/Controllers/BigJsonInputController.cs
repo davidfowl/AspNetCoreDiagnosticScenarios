@@ -49,7 +49,7 @@ namespace Scenarios.Controllers
         }
 
         [HttpPost("/big-json-input-4")]
-        public async Task<IActionResult> BigContentManualGood()
+        public async Task<IActionResult> BigContentNewtonsofJsonManualGood()
         {
             var streamReader = new HttpRequestStreamReader(Request.Body, Encoding.UTF8);
 
@@ -59,6 +59,14 @@ namespace Scenarios.Controllers
             // This asynchronously reads the entire payload into a JObject then turns it into the real object.
             var obj = await JToken.ReadFromAsync(jsonReader);
             var rootobject = obj.ToObject<PokemonData>(serializer);
+
+            return Accepted();
+        }
+
+        [HttpPost("/big-json-input-5")]
+        public async Task<IActionResult> BigContentSystemTextJsonManualGood()
+        {
+            var rootobject = System.Text.Json.JsonSerializer.DeserializeAsync<PokemonData>(Request.Body);
 
             return Accepted();
         }
